@@ -22,7 +22,6 @@ const root = path.resolve(fileURLToPath(import.meta.url), "../..");
 
 /** The standing sample PR the fixture mirrors. */
 export const SAMPLE_PR = {
-  url: "https://github.com/amishaba/skrub-sample/pull/1",
   base: "eaa8c462258ac02ca72c2af7b3392cb36a4a3797",
   head: "fc91653804b2d5b19fe953841c5b2881df58e5a4",
   committedAt: "2026-10-05T21:40:09.000Z",

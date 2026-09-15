@@ -60,7 +60,6 @@ async function writeHookSaid(): Promise<{ file: string; lines: string[] }> {
   }
 }
 const hook = await writeHookSaid();
-const PR = demo.source.url;
 const title = "skrub - clean code & product sense for coding agents";
 const safeCount = demo.hunks.filter((h) => isApplicable(h) && h.safe).length;
 const callCount = demo.hunks.filter((h) => isApplicable(h) && !h.safe).length;
@@ -201,8 +200,8 @@ const hero = `
     </div>
     <div class="hero-copy">
       <div class="hero-stat">${story.lines}<span> of ${story.added} lines</span></div>
-      <p class="hero-sub">on <a href="${PR}">one real pull request</a>: ${story.files} files, <b>${story.added} added lines</b>. skrub found <b>${story.lines}</b> of them the agent didn't need: ${safeCount} safe to delete and ${callCount} judgment calls for you, plus <b>${rewrites}</b> places it rewrote code the repo already had. <a href="sample">review them yourself</a>.</p>
-      <p class="hero-links"><a href="${REPO}">[ github ]</a><a href="${PR}">[ the pr ]</a><a href="sample">[ try the review ]</a><code>npx github:amishaba/skrub</code></p>
+      <p class="hero-sub">on <a href="sample">one real pull request</a>: ${story.files} files, <b>${story.added} added lines</b>. skrub found <b>${story.lines}</b> of them the agent didn't need: ${safeCount} safe to delete and ${callCount} judgment calls for you, plus <b>${rewrites}</b> places it rewrote code the repo already had. <a href="sample">review them yourself</a>.</p>
+      <p class="hero-links"><a href="${REPO}">[ github ]</a><a href="sample">[ try the review ]</a><code>npx github:amishaba/skrub</code></p>
     </div>
   </div>
 </section>

@@ -2,7 +2,7 @@
 
 clean code & product sense for coding agents.
 
-[![ci](https://github.com/amishaba/skrub/actions/workflows/ci.yml/badge.svg)](https://github.com/amishaba/skrub/actions/workflows/ci.yml) · [live demo](https://unvibe-eight.vercel.app) · [sample pr](https://github.com/amishaba/skrub-sample/pull/1)
+[![ci](https://github.com/amishaba/skrub/actions/workflows/ci.yml/badge.svg)](https://github.com/amishaba/skrub/actions/workflows/ci.yml) · [live demo](https://unvibe-eight.vercel.app)
 
 ## why i built this
 
@@ -24,7 +24,7 @@ skrub finds what coding agents leave behind in typescript repos: an export nothi
 
 inside claude code, it also works as a product engineer pair: before the agent builds, it's pointed at the problem behind the ask and at how the leading products in its space do the same thing.
 
-the [sample pr](https://github.com/amishaba/skrub-sample/pull/1) is a coding agent's csv export. it changes 8 files and adds 99 lines. skrub's verdict:
+the sample is a coding agent's pull request for a csv export. it changes 8 files and adds 99 lines. skrub's verdict:
 
 > ## 16 deletions · 44 lines · ~358 tokens · 1 export to drop · 5 notes
 

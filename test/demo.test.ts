@@ -61,7 +61,6 @@ test("the README's verdict is the headline the report module prints for the ship
 test("the README's story numbers are the fixture's", () => {
   assert.ok(readme.includes("changes 8 files and adds 99 lines"));
   assert.ok(readme.includes(`[live demo](${SITE})`));
-  assert.ok(readme.includes(shipped.source.url));
 });
 
 test("every filter on the page has something to show", () => {
