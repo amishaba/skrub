@@ -1,6 +1,6 @@
 import path from "node:path";
 import { errMessage } from "../lib/errors.ts";
-import { stopHookReason } from "../agent/hook.ts";
+import { stopHook } from "../agent/hook.ts";
 
 interface StopInput {
   session_id?: string;
@@ -11,22 +11,23 @@ interface StopInput {
 /**
  * A Claude Code Stop hook. When the agent is about to finish and its change
  * leaves code to clean up, block the stop once and hand it the list; it can
- * delete, or say why something stays.
+ * delete, or say why something stays. A clean change gets one line for the user.
  */
 export async function hookCommand(): Promise<void> {
   const input = await readStdinJson<StopInput>();
   if (input.stop_hook_active) return;
   const cwd = path.resolve(input.cwd ?? process.cwd());
 
-  let reason: string | null;
+  let verdict: Awaited<ReturnType<typeof stopHook>>;
   try {
-    reason = await stopHookReason(cwd, input.session_id ?? "default");
+    verdict = await stopHook(cwd, input.session_id ?? "default");
   } catch (err) {
     // A broken scan must never trap the agent; say so and let it stop.
     console.error(`skrub hook: scan failed, not blocking (${errMessage(err)})`);
     return;
   }
-  if (reason) console.log(JSON.stringify({ decision: "block", reason }));
+  if (verdict && "block" in verdict) console.log(JSON.stringify({ decision: "block", reason: verdict.block }));
+  else if (verdict) console.log(JSON.stringify({ systemMessage: verdict.pass }));
 }
 
 export async function readStdinJson<T>(): Promise<Partial<T>> {

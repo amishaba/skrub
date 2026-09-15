@@ -4,7 +4,7 @@ import { fail, errMessage } from "../lib/errors.ts";
 import { runScan } from "../scan/run.ts";
 import type { Scan } from "../scan/summary.ts";
 import { type FixResult, fix } from "../patch/fix.ts";
-import { findingLines, headline } from "../report/report.ts";
+import { findingLines, headline, scopeOf } from "../report/report.ts";
 
 interface FixOpts {
   against?: string;
@@ -15,6 +15,7 @@ interface FixOpts {
   dryRun?: boolean;
   json?: boolean;
   verify?: boolean;
+  wholeRepo?: boolean;
 }
 
 /** Prints what it removed and what it left for a person to read. */
@@ -26,17 +27,17 @@ export async function fixCommand(opts: FixOpts): Promise<void> {
   } catch (err) {
     fail(errMessage(err));
   }
-  const { done, left, reverted, errors, verified, stopped } = result;
+  const { done, left, reverted, errors, verified, stopped, scope } = result;
 
   if (opts.json) {
-    console.log(JSON.stringify({ [opts.dryRun ? "wouldApply" : "applied"]: done, left, reverted, errors, verified, stopped }, null, 2));
+    console.log(JSON.stringify({ [opts.dryRun ? "wouldApply" : "applied"]: done, left, reverted, errors, verified, stopped, scope }, null, 2));
     return;
   }
 
   if (done.length === 0) {
-    console.log(`skrub fix  nothing ${opts.all ? "to delete" : "safe to delete"}`);
+    console.log(`skrub fix  nothing ${opts.all ? "to delete" : "safe to delete"} in ${scope}${wider(scope)}`);
   } else {
-    console.log(`skrub fix  ${opts.dryRun ? "would apply" : "applied"}: ${headline(done)}`);
+    console.log(`skrub fix  ${opts.dryRun ? "would apply" : "applied"} in ${scope}${wider(scope)}: ${headline(done)}`);
     for (const line of listed(done)) console.log(`  ${line}`);
   }
   if (stopped) console.log(`\n  stopped after an earlier pass: ${stopped}`);
@@ -50,6 +51,11 @@ export async function fixCommand(opts: FixOpts): Promise<void> {
     console.log(`\n  left for review (${left.length}): not provably dead; read, then delete or keep`);
     for (const line of findingLines(left)) console.log(`  ${line}`);
   }
+}
+
+/** With uncommitted changes, skrub looks only at them; say how to look at everything. */
+function wider(scope: string): string {
+  return scope === "your uncommitted changes" ? " (--whole-repo for everything)" : "";
 }
 
 /** Past a handful, `export` keywords dropped from things used only in their own file are counted and named, not listed one per line. */
@@ -72,7 +78,7 @@ export async function checkCommand(opts: FixOpts): Promise<void> {
   const cwd = path.resolve(opts.cwd ?? process.cwd());
   let scan: Scan;
   try {
-    ({ scan } = await runScan({ against: opts.against, staged: opts.staged, cwd, llm: opts.llm ?? false }));
+    ({ scan } = await runScan({ against: opts.against, staged: opts.staged, cwd, llm: opts.llm ?? false, wholeRepo: opts.wholeRepo }));
   } catch (err) {
     fail(errMessage(err));
   }
@@ -80,7 +86,7 @@ export async function checkCommand(opts: FixOpts): Promise<void> {
   if (opts.json) {
     console.log(JSON.stringify({ ok: failing.length === 0, hunks: scan.hunks }, null, 2));
   } else {
-    console.log(`skrub check  ${headline(scan.hunks)}`);
+    console.log(`skrub check  in ${scopeOf(scan.summary)}${wider(scopeOf(scan.summary))}: ${headline(scan.hunks)}`);
     for (const line of findingLines(scan.hunks)) console.log(`  ${line}`);
   }
   if (failing.length > 0) process.exitCode = 1;

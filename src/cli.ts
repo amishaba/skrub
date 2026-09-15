@@ -26,6 +26,7 @@ function scanOpts(cmd: Command): Command {
   return cmd
     .option("--against <ref>", "only hunks in git diff <ref>")
     .option("--staged", "only hunks in the staged diff")
+    .option("--whole-repo", "scan the whole repo even with uncommitted changes (by default, only those are scanned)")
     .option("--cwd <path>", "working directory")
     .option("--json", "print summary to stdout")
     .option("--no-llm", "skip the optional naming/pattern pass");

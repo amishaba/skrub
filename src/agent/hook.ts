@@ -14,13 +14,14 @@ import { productUnfilled } from "../product/product.ts";
 import { promises as fs } from "node:fs";
 
 /**
- * What a Claude Code Stop hook should tell the agent, or null to let it stop.
- * Scans only what it changed since the last commit (untracked files
- * included). If it left code to clean up, the answer is the list; the same
- * findings are only raised once per session, so an agent that disagrees is
- * not stuck in a loop.
+ * What a Claude Code Stop hook should do: block with what to tell the agent,
+ * pass with a line for the user, or nothing. Scans only what it changed since
+ * the last commit (untracked files included). If it left code to clean up, the
+ * agent gets the list; the same findings are only raised once per session, so
+ * an agent that disagrees is not stuck in a loop. A clean change is said once
+ * per session, so the user knows the check ran.
  */
-export async function stopHookReason(cwd: string, session: string): Promise<string | null> {
+export async function stopHook(cwd: string, session: string): Promise<{ block: string } | { pass: string } | null> {
   if (!(await isGitRepo(cwd)) || !(await isDirty(cwd))) return null;
   // Before the first commit, everything is the agent's change.
   const diff = (await refExists("HEAD", cwd)) ? await diffScope(cwd, "HEAD") : null;
@@ -32,18 +33,22 @@ export async function stopHookReason(cwd: string, session: string): Promise<stri
   const folds = hunks.filter((h) => h.kind === "fold");
   const raised = [...deletions, ...conventions, ...reuse, ...folds];
   const unfilled = productUnfilled(await fs.readFile(path.join(cwd, CONVENTIONS_FILE), "utf8").catch(() => ""));
-  if (raised.length === 0 && !unfilled) return null;
+  if (raised.length === 0 && !unfilled) {
+    const files = diff ? diff.files.length : null;
+    if (!(await recordOnce(cwd, "hook.json", session, "passed"))) return null;
+    return { pass: `skrub checked this change${files ? ` (${files} ${files === 1 ? "file" : "files"})` : ""}: nothing to clean up.` };
+  }
 
   const fingerprint = createHash("sha1")
     .update([...raised.map((h) => `${h.id}:${h.text}`).sort(), unfilled ? "product-unfilled" : ""].join("\n"))
     .digest("hex");
   if (!(await recordOnce(cwd, "hook.json", session, fingerprint))) return null;
   const message = stopMessage(deletions, conventions, reuse, folds, selfCommand());
-  if (!unfilled) return message;
+  if (!unfilled) return { block: message };
   const product =
     `skrub: ${CONVENTIONS_FILE} doesn't say yet who this product is for. Fill in each "(to fill in)" under "## product" ` +
     "from the README, routes and UI (who uses it, the space and the products to model on, what to copy from them), then tell the user in one line so they can correct it.";
-  return raised.length ? `${product}\n\n${message}` : `${product}\nThen finish; skrub won't raise this again this session.`;
+  return { block: raised.length ? `${product}\n\n${message}` : `${product}\nThen finish; skrub won't raise this again this session.` };
 }
 
 /**

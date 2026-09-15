@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { establish } from "../src/conventions/establish.ts";
-import { stopHookReason } from "../src/agent/hook.ts";
+import { stopHook } from "../src/agent/hook.ts";
 import { detectProduct, productUnfilled } from "../src/product/product.ts";
 import { project } from "./helpers.ts";
 
@@ -78,17 +78,19 @@ test("init adds the product section to a conventions file written before it exis
   assert.match(readFileSync(file, "utf8"), /## product\n/);
 });
 
-test("the stop hook asks once for the product section while it's unfilled, then not at all once it's filled", async () => {
+test("the stop hook asks once for the product section while it's unfilled; once it's filled, a clean change is said once", async () => {
   const dir = repo(AGENTDIFF_LIKE);
   await establish(dir);
   writeFileSync(path.join(dir, "src/index.ts"), "export const run = () => 2;\n");
-  const first = await stopHookReason(dir, "s1");
-  assert.match(first ?? "", /doesn't say yet who this product is for/);
-  assert.equal(await stopHookReason(dir, "s1"), null, "once per session");
+  const first = await stopHook(dir, "s1");
+  assert.match(first && "block" in first ? first.block : "", /doesn't say yet who this product is for/);
+  assert.equal(await stopHook(dir, "s1"), null, "once per session");
 
   const file = path.join(dir, FILE);
   writeFileSync(file, readFileSync(file, "utf8").replaceAll("(to fill in)", "filled"));
-  assert.equal(await stopHookReason(dir, "s2"), null);
+  const passed = await stopHook(dir, "s2");
+  assert.match(passed && "pass" in passed ? passed.pass : "", /^skrub checked this change \(\d+ files?\): nothing to clean up\.$/);
+  assert.equal(await stopHook(dir, "s2"), null, "said once per session");
 });
 
 test("every session starts knowing the conventions; until the product is filled in, filling it comes first", async () => {

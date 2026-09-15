@@ -199,12 +199,13 @@ test("a file a package.json script runs by path is an entry", async () => {
 });
 
 test("the stop hook lists at most ten findings in all, however many sections it has", async () => {
-  const { stopHookReason } = await import("../src/agent/hook.ts");
+  const { stopHook } = await import("../src/agent/hook.ts");
   const dir = repo({ "src/index.ts": "console.log(1);\n" });
   const many = Array.from({ length: 14 }, (_, i) => `export const unused${i} = ${i};\n`).join("");
   writeFileSync(path.join(dir, "src/index.ts"), 'import "./extra.ts";\nconsole.log(1);\n');
   writeFileSync(path.join(dir, "src/extra.ts"), many + "console.log(0);\n");
-  const reason = (await stopHookReason(dir, "s1")) ?? "";
+  const verdict = await stopHook(dir, "s1");
+  const reason = verdict && "block" in verdict ? verdict.block : "";
   const listed = reason.split("\n").filter((l) => /^src\//.test(l));
   assert.equal(listed.length, 10);
   assert.match(reason, /…and 4 more/);

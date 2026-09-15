@@ -1,5 +1,5 @@
 import type { Scan } from "../scan/summary.ts";
-import { headline, kindRows } from "./report.ts";
+import { headline, kindRows, scopeOf } from "./report.ts";
 import { runHint } from "../agent/self.ts";
 
 /** The scan, as printed when there is no TUI to open (piped, CI, or `view` without a terminal). */
@@ -13,7 +13,7 @@ export function printScanSummary(
     .map((r) => `${r.kind} ${r.hunks}`)
     .join("  ");
   if (kinds) console.log(`  ${kinds}`);
-  if (scan.summary.against) console.log(`  against ${scan.summary.against}`);
+  console.log(`  in ${scopeOf(scan.summary)}`);
   if (scan.summary.llm) console.log(`  llm ${scan.summary.llm}`);
   else if (extra?.llmFlag === false) console.log("  mechanical (--no-llm)");
   else console.log("  mechanical (set GEMINI_API_KEY for the llm pass)");

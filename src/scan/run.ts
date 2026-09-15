@@ -17,6 +17,8 @@ interface RunScanOpts {
   requireAgainst?: boolean;
   /** Every finding, not just the top `maxHunks`: for `fix`, which deletes them all. */
   uncapped?: boolean;
+  /** The whole repo even when the tree has uncommitted changes. */
+  wholeRepo?: boolean;
 }
 
 /**
@@ -33,7 +35,7 @@ export async function runScan(opts: RunScanOpts): Promise<{ scan: Scan; dir: str
 
   let against = opts.against;
   // A repo with no commits yet has no HEAD to diff against: everything in it is new, so scan it all.
-  if (!opts.requireAgainst && !opts.staged && against == null && (await isGitRepo(cwd)) && (await isDirty(cwd)) && (await refExists("HEAD", cwd))) {
+  if (!opts.wholeRepo && !opts.requireAgainst && !opts.staged && against == null && (await isGitRepo(cwd)) && (await isDirty(cwd)) && (await refExists("HEAD", cwd))) {
     against = "HEAD";
   }
   if (against && !(await refExists(against, cwd))) {

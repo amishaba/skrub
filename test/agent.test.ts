@@ -167,11 +167,20 @@ test("fix deletes the agent's dead code until none is left, and leaves the old d
     },
   );
   const out = skrub(dir, ["fix"]);
-  assert.match(out, /applied: 2 deletions · /);
+  assert.match(out, /applied in your uncommitted changes \(--whole-repo for everything\): 2 deletions · /);
   assert.equal(readFileSync(path.join(dir, "src/index.ts"), "utf8"), 'import { a } from "./lib.ts";\nexport const main = () => a();\n');
   // the import went first; that left extra.ts with no importer, and the next pass took the file
   assert.equal(existsSync(path.join(dir, "src/extra.ts")), false);
   assert.match(readFileSync(path.join(dir, "src/lib.ts"), "utf8"), /oldDead/);
+});
+
+test("fix says what it scanned, and --whole-repo looks past the uncommitted changes", () => {
+  const dir = repo(
+    { "src/index.ts": "export const main = () => 1;\n", "src/lib.ts": "export function oldDead() {\n  return 0;\n}\n" },
+    { "README.md": "notes\n" },
+  );
+  assert.match(skrub(dir, ["fix", "--dry-run"]), /^skrub fix {2}nothing safe to delete in your uncommitted changes \(--whole-repo for everything\)$/m);
+  assert.match(skrub(dir, ["fix", "--dry-run", "--whole-repo"]), /^skrub fix {2}would apply in the whole repo: 1 deletion · /m);
 });
 
 test("the Stop hook blocks once with the list, then lets the agent finish if nothing changed", () => {

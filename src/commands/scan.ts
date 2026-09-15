@@ -11,6 +11,7 @@ interface ScanOpts {
   cwd?: string;
   json?: boolean;
   llm?: boolean;
+  wholeRepo?: boolean;
 }
 
 export async function scanCommand(opts: ScanOpts): Promise<void> {
@@ -22,6 +23,7 @@ export async function scanCommand(opts: ScanOpts): Promise<void> {
       staged: opts.staged,
       cwd,
       llm: opts.llm,
+      wholeRepo: opts.wholeRepo,
     });
     if (opts.json) {
       console.log(JSON.stringify(scan.summary, null, 2));
@@ -38,6 +40,6 @@ export async function scanCommand(opts: ScanOpts): Promise<void> {
   await launchTui({
     mode: "scan",
     cwd,
-    scanOpts: { against: opts.against, staged: opts.staged, llm: opts.llm },
+    scanOpts: { against: opts.against, staged: opts.staged, llm: opts.llm, wholeRepo: opts.wholeRepo },
   });
 }

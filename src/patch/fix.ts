@@ -6,6 +6,7 @@ import { loadConfig } from "../config.ts";
 import { readJson, writeJson } from "../lib/fs.ts";
 import { runScan } from "../scan/run.ts";
 import { SKRUB_DIR } from "../store/scans.ts";
+import { scopeOf } from "../report/report.ts";
 import { applyHunks } from "./apply.ts";
 import { type Check, errorFile, errorNames, introduced, runCheck, verifyCommands } from "./verify.ts";
 
@@ -18,6 +19,8 @@ interface FixOpts {
   dryRun?: boolean;
   /** False skips the typecheck after deleting. */
   verify?: boolean;
+  /** The whole repo even when the tree has uncommitted changes. */
+  wholeRepo?: boolean;
 }
 
 export interface FixResult {
@@ -33,6 +36,8 @@ export interface FixResult {
   verified: string | null;
   /** Why fix stopped early, if a later pass couldn't scan. Everything applied before it was still checked. */
   stopped?: string;
+  /** What the first scan looked at: "your uncommitted changes", "the whole repo". */
+  scope: string;
 }
 
 const MAX_PASSES = 5;
@@ -48,7 +53,7 @@ const BROKE = "broke-typecheck.json";
  */
 export async function fix(cwd: string, opts: FixOpts): Promise<FixResult> {
   const scanOnce = async (against: string | undefined) =>
-    (await runScan({ against, staged: opts.staged, cwd, llm: opts.llm ?? false, uncapped: true })).scan;
+    (await runScan({ against, staged: opts.staged, cwd, llm: opts.llm ?? false, uncapped: true, wholeRepo: opts.wholeRepo })).scan;
 
   const broke = new Set(await readJson<string[]>(path.join(cwd, SKRUB_DIR, BROKE)).catch(() => [] as string[]));
   const split = (hunks: Hunk[]) => {
@@ -57,8 +62,9 @@ export async function fix(cwd: string, opts: FixOpts): Promise<FixResult> {
   };
 
   let scan = await scanOnce(opts.against);
+  const scope = scopeOf(scan.summary);
   let { fixes, known } = split(scan.hunks);
-  if (opts.dryRun) return { done: fixes, left: scan.hunks.filter((h) => !fixes.includes(h)), reverted: known, errors: [], verified: null };
+  if (opts.dryRun) return { done: fixes, left: scan.hunks.filter((h) => !fixes.includes(h)), reverted: known, errors: [], verified: null, scope };
 
   const cmds = opts.verify === false || fixes.length === 0 ? null : await verifyCommands(cwd, (await loadConfig(cwd)).verify);
   const before = cmds ? await runCheck(cwd, cmds) : null;
@@ -87,7 +93,7 @@ export async function fix(cwd: string, opts: FixOpts): Promise<FixResult> {
   }
 
   const left = scan.hunks.filter((h) => !applied.includes(h) && !known.includes(h));
-  const result: FixResult = { done: applied, left, reverted: known, errors: [], verified: cmds ? cmds.map(label).join(" && ") : null, ...(stopped ? { stopped } : {}) };
+  const result: FixResult = { done: applied, left, reverted: known, errors: [], verified: cmds ? cmds.map(label).join(" && ") : null, scope, ...(stopped ? { stopped } : {}) };
   if (!cmds || !before || applied.length === 0) return result;
 
   const checked = await putBackWhatBroke(cwd, cmds, before, originals, firstPass, result);

@@ -132,6 +132,14 @@ export function findingLines(hunks: Hunk[]): string[] {
   });
 }
 
+/** What a scan looked at, as the terminal says it: "your uncommitted changes", "the whole repo". */
+export function scopeOf(summary: { against: string | null; staged: boolean }): string {
+  if (summary.staged) return "the staged changes";
+  if (summary.against === "HEAD") return "your uncommitted changes";
+  if (summary.against) return `the changes since ${short(summary.against)}`;
+  return "the whole repo";
+}
+
 export function suggestsDeletion(h: Hunk): boolean {
   return h.safe && h.startLine >= 1 && isApplicable(h) && h.kind !== "unused_file";
 }

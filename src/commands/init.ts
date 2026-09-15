@@ -33,6 +33,7 @@ export async function initCommand(opts: { cwd?: string; hook?: boolean; skill?: 
     done.push(
       `${CONVENTIONS_FILE}  this repo's conventions${conventions.mined.shared.length ? ", and what it shares most," : ""} read from its code`,
     );
+  else if (conventions.refreshed) done.push(`${CONVENTIONS_FILE}  what it says about the code, brought up to date; rules, notes and product kept`);
   if (await gitignoreSkrubDir(cwd)) done.push(".gitignore  .skrub/");
 
   console.log("skrub init");

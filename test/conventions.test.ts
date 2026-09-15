@@ -184,3 +184,21 @@ test("the file says where its rules hold, and describes another app's own names 
   assert.match(text, /- `Card`: component in web\/src\/Card\.tsx, used by 3 files/);
   assert.match(text, /^file-names: kebab-case$/m, "the src/ rules are unchanged");
 });
+
+test("init brings the description up to date and keeps the rules, the notes and the product as written", async () => {
+  const old =
+    "---\nfile-names: snake_case\n---\n\n# conventions\n\nThe settings above are checked on every change.\n\n" +
+    "## product\n\n- who uses it, and the job they're doing: support leads triaging tickets\n\n" +
+    "## from the code\n\n- layout: src/\n\n## notes\n\n- tickets are \"cases\" in the UI\n";
+  const dir = project(house({ ".claude/conventions.md": old }));
+  git(dir, "init", "-q");
+  const result = await establish(dir, false, true);
+  assert.equal(result.refreshed, true);
+  const text = readFileSync(path.join(dir, ".claude/conventions.md"), "utf8");
+  assert.match(text, /^---\nfile-names: snake_case\n---\n/, "the checked rules stay as written");
+  assert.match(text, /read from the code in src\//);
+  assert.match(text, /- file names: kebab-case \(\d+ of \d+\)/);
+  assert.match(text, /support leads triaging tickets/);
+  assert.match(text, /- tickets are "cases" in the UI/);
+  assert.equal((await establish(dir, false, true)).refreshed, false, "a second run has nothing to change");
+});

@@ -17,7 +17,7 @@ import { useTerminalSize } from "./useTerminalSize.ts";
 export interface TuiProps {
   cwd: string;
   mode: "scan" | "view";
-  scanOpts?: { against?: string; staged?: boolean; llm?: boolean };
+  scanOpts?: { against?: string; staged?: boolean; llm?: boolean; wholeRepo?: boolean };
   scan?: Scan;
   decisions?: Decisions;
 }
@@ -62,6 +62,7 @@ export function App(props: TuiProps) {
           against: props.scanOpts?.against,
           staged: props.scanOpts?.staged,
           llm: props.scanOpts?.llm,
+          wholeRepo: props.scanOpts?.wholeRepo,
         });
         const hold = Math.max(0, 2400 - (Date.now() - started));
         if (hold) await new Promise((r) => setTimeout(r, hold));
@@ -78,7 +79,7 @@ export function App(props: TuiProps) {
     return () => {
       alive = false;
     };
-  }, [mode, cwd, props.scanOpts?.against, props.scanOpts?.staged, props.scanOpts?.llm]);
+  }, [mode, cwd, props.scanOpts?.against, props.scanOpts?.staged, props.scanOpts?.llm, props.scanOpts?.wholeRepo]);
 
   const hunks = scan?.hunks ?? [];
   const current = hunks[index];

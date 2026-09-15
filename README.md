@@ -103,6 +103,7 @@ npx skrub                 # scan, then keep or delete in the terminal
 npx skrub fix             # delete what's safe, typecheck, put back what broke (--dry-run to look first)
 npx skrub check           # report; exit 1 if anything is safe to delete
 npx skrub --against main  # only what this branch changed
+npx skrub --whole-repo    # everything, even with uncommitted changes (by default, only those)
 npx skrub init            # product, conventions, hooks and skill for claude code
 npx skrub conventions     # show where the code drifted from the conventions (--write to update)
 ```
