@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Clean code & product sense for coding agents: deletes what knip finds unused and typechecks the result, points new code at what the repo already has, and gives Claude Code the product context to build the right thing. Not a bug finder.",
   "license": "MIT",
-  "homepage": "https://unvibe-eight.vercel.app",
+  "homepage": "https://skrub.vercel.app",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/amishaba/unvibe.git"

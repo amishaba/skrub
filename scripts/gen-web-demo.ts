@@ -16,7 +16,7 @@ import { lineCount, isApplicable, removesLines } from "../src/hunk.ts";
 
 const root = path.resolve(fileURLToPath(import.meta.url), "../..");
 
-export const SITE = "https://unvibe-eight.vercel.app";
+export const SITE = "https://skrub.vercel.app";
 export const REPO = "https://github.com/amishaba/skrub";
 
 const demo = JSON.parse(readFileSync(SCAN_JSON, "utf8")) as DemoScan;

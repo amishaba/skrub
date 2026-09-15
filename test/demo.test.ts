@@ -12,7 +12,7 @@ const shipped = JSON.parse(readFileSync(SCAN_JSON, "utf8")) as DemoScan;
 const page = readFileSync(path.join(root, "web/index.html"), "utf8");
 const sample = readFileSync(path.join(root, "web/sample.html"), "utf8");
 const readme = readFileSync(path.join(root, "README.md"), "utf8");
-const SITE = "https://unvibe-eight.vercel.app";
+const SITE = "https://skrub.vercel.app";
 
 test("the sample review is seeded with the shipped scan, byte for byte, before the app script runs", () => {
   const inline = `window.__SKRUB_DEMO__ = ${JSON.stringify({ summary: shipped.summary, hunks: shipped.hunks })};`;

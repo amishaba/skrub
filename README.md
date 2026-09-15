@@ -2,7 +2,7 @@
 
 clean code & product sense for coding agents.
 
-[![ci](https://github.com/amishaba/skrub/actions/workflows/ci.yml/badge.svg)](https://github.com/amishaba/skrub/actions/workflows/ci.yml) · [live demo](https://unvibe-eight.vercel.app)
+[![ci](https://github.com/amishaba/skrub/actions/workflows/ci.yml/badge.svg)](https://github.com/amishaba/skrub/actions/workflows/ci.yml) · [live demo](https://skrub.vercel.app)
 
 ## why i built this
 
@@ -28,7 +28,7 @@ the sample is a coding agent's pull request for a csv export. it changes 8 files
 
 > ## 16 deletions · 44 lines · ~358 tokens · 1 export to drop · 5 notes
 
-<p align="center"><a href="https://unvibe-eight.vercel.app"><img src="docs/demo.png" alt="the skrub demo page: an ascii shark eating a lane through the sample pr's code, above 'clean code & product sense for coding agents.' and '44 of 99 lines'" width="960"></a></p>
+<p align="center"><a href="https://skrub.vercel.app"><img src="docs/demo.png" alt="the skrub demo page: an ascii shark eating a lane through the sample pr's code, above 'clean code & product sense for coding agents.' and '44 of 99 lines'" width="960"></a></p>
 
 ## quick start
 
