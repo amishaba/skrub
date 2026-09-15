@@ -16,6 +16,12 @@ and all of it feeds back into the agent each time it indexes your codebase. that
 
 clean code might be a standard from bygone days. but agents build on whatever is already there. the code is the base, and if the base is strong, so is everything built on it. every line you leave is context the next prompt reads. in [one controlled study](https://arxiv.org/html/2605.20049v1), the same agent passed just as often on clean code, but used 7% fewer tokens and re-opened files 34% less.
 
+This also all feeds back into product engineering, which is the type of work i find myself doing most. A weak code foundation means the agent isn't able to ascertain, purely off of the code, what business logic you're aiming to carry out. This could be something as basic as having a bunch of scattered table and dropdown components - and poor naming on variables. If you've got a codebase that uses three different terms - let's say `user`, `account` and `member` - to refer to the same thing, you're going to find urself in a bloated codebase pretty quickly.
+
+Standardizing code therefore not only makes your coding agent consume fewer tokens, but also gives it a better understanding and foundation - the business logic becomes clearer, which means a better product. Like i said before - i can't write better code than a sota model, but i CAN give it a much better sense of the business logic - and the way to do this is having cleaner, more intentionally written code.
+
+Better ui components and standardized tailwind libraries will make your product look and feel much cleaner. Api calls that are light, well scoped and fast will make ur app easier and faster to use. No forgotten empty states, loading states that just spin forever, or error messages that only say "something went wrong". this is all stuff users WILL feel - and it's way easier for an agent to get right when the code underneath it is clean and consistent.
+
 ## what it does
 
 skrub deletes the dead code your agent leaves behind, points it back at what the repo already has, and starts every session knowing what the product is and whose patterns to follow.
