@@ -4,7 +4,7 @@ A reorg makes the codebase easier to read without changing what it does. Reviewe
 
 ## Order
 
-1. **Delete first.** Run `npx --yes github:amishaba/skrub fix` and handle what it leaves. Don't move code nobody uses.
+1. **Delete first.** Run `npx --yes @amishaba/skrub fix` and handle what it leaves. Don't move code nobody uses.
 2. **Colocate.** Move single-caller helpers into their callers; move files into the feature folder they serve ([colocation.md](colocation.md)).
 3. **Collapse pass-through layers.** A function, class, or file that only forwards to another goes; callers call the real thing.
 4. **Merge duplicates.** Keep the better-named, better-placed copy and point callers at it.
@@ -18,4 +18,4 @@ A reorg makes the codebase easier to read without changing what it does. Reviewe
 - **No shims at old paths.** No `export * from "./new/place"` left behind, unless the old path is a published package entry point.
 - **One concept per commit:** "move invoice helpers into invoices/", "rename user → account". A reviewer should be able to read each commit as a list of moves.
 - **Plan big reorgs before doing them.** If it will touch more than about ten files, write the plan (what moves where, and why) and confirm it first.
-- **Finish with `npx --yes github:amishaba/skrub check`** to confirm the reorg didn't leave anything orphaned.
+- **Finish with `npx --yes @amishaba/skrub check`** to confirm the reorg didn't leave anything orphaned.

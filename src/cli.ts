@@ -123,9 +123,9 @@ program
 
 program
   .command("init")
-  .description("Install the skrub skill and Stop hook into this repo's .claude/")
+  .description("Set up Claude Code here: the product and conventions, the session, write and stop hooks, and the skill")
   .option("--cwd <path>", "working directory")
-  .option("--no-hook", "skip the Stop hook")
+  .option("--no-hook", "skip the hooks")
   .option("--no-skill", "skip the skill")
   .action(async (opts) => {
     await initCommand(opts);

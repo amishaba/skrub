@@ -6,7 +6,7 @@
   "homepage": "https://skrub.vercel.app",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amishaba/unvibe.git"
+    "url": "git+https://github.com/amishaba/skrub.git"
   },
   "type": "module",
   "bin": {

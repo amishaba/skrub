@@ -145,7 +145,7 @@ test("init adds one Stop hook, keeps every other setting, and updates in place w
     }),
   });
   const file = path.join(dir, ".claude/settings.json");
-  await addStopHook(file, "npx --yes github:amishaba/skrub hook");
+  await addStopHook(file, "npx --yes @amishaba/skrub hook");
   await addStopHook(file, "node /x/bin/skrub.mjs hook");
   const settings = JSON.parse(readFileSync(file, "utf8"));
   assert.deepEqual(settings.permissions, { allow: ["Bash(npm test)"] });
@@ -206,8 +206,8 @@ test("hooks and messages name skrub the way it was run, never a bare npx skrub o
   const npx = path.join(tmpdir(), ".npm", "_npx", "abc", "node_modules", "@amishaba", "skrub", "bin", "skrub.mjs");
   const local = path.join(proj, "node_modules", "@amishaba", "skrub", "bin", "skrub.mjs");
   const global = path.join(tmpdir(), "lib", "node_modules", "@amishaba", "skrub", "bin", "skrub.mjs");
-  assert.equal(selfCommand(proj, npx), "npx --yes github:amishaba/skrub");
-  assert.equal(runHint(proj, npx), "npx github:amishaba/skrub");
+  assert.equal(selfCommand(proj, npx), "npx --yes @amishaba/skrub");
+  assert.equal(runHint(proj, npx), "npx @amishaba/skrub");
   assert.equal(selfCommand(proj, local), "npx skrub");
   assert.equal(selfCommand(proj, global), `node ${JSON.stringify(global)}`);
   assert.equal(runHint(proj, global), "skrub");

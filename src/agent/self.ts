@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 /** How the shipped skill files say to run skrub; `init` rewrites it to the command that runs this install. */
-export const SKILL_COMMAND = "npx --yes github:amishaba/skrub";
+export const SKILL_COMMAND = "npx --yes @amishaba/skrub";
 
 const BIN = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../bin/skrub.mjs");
 
@@ -28,10 +28,10 @@ export function selfCommand(cwd = process.cwd(), bin = BIN): string {
   return `node ${JSON.stringify(bin)}`;
 }
 
-/** The same, for a person to read in a message: `npx github:amishaba/skrub`, `npx skrub`, or `skrub`. */
+/** The same, for a person to read in a message: `npx @amishaba/skrub`, `npx skrub`, or `skrub`. */
 export function runHint(cwd = process.cwd(), bin = BIN): string {
   const from = source(cwd, bin);
-  if (from === "npx") return "npx github:amishaba/skrub";
+  if (from === "npx") return "npx @amishaba/skrub";
   if (from === "project") return "npx skrub";
   return "skrub";
 }

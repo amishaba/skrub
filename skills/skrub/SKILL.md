@@ -7,7 +7,7 @@ description: Build like a product engineer, follow and maintain this repo's conv
 
 The rules a tool can check live in `.claude/conventions.md` and are checked for you. This file is only about when to do what.
 
-**Starting in a repo.** Read `.claude/conventions.md`; it is short. If it doesn't exist, run `npx --yes github:amishaba/skrub conventions` to write it from the code. Repo docs (AGENTS.md, CLAUDE.md) win over it; if they disagree, tell the user.
+**Starting in a repo.** Read `.claude/conventions.md`; it is short. If it doesn't exist, run `npx --yes @amishaba/skrub conventions` to write it from the code. Repo docs (AGENTS.md, CLAUDE.md) win over it; if they disagree, tell the user.
 
 **Knowing the product.** The `## product` section of `.claude/conventions.md` says what this product is and whose patterns to follow. If any line says `(to fill in)`, fill it before other work: read the README, package.json, routes and UI, then write who uses it and the job they're doing, the space with two or three products those users already know, and what to copy from them for this repo's surfaces (CLI output, dashboard layout, API shapes, onboarding). Keep each line short. Claude Code asks the user before edits under `.claude/`; that approval is their chance to correct it. If they turn it down, put the lines in your reply instead, and update the section whenever they correct you.
 
@@ -17,7 +17,7 @@ The rules a tool can check live in `.claude/conventions.md` and are checked for 
 
 **When the user corrects you.** If the correction should hold next time (a name, a place, a pattern), add one line to the notes in `.claude/conventions.md`. Merge with an existing line rather than adding a near-duplicate, and keep the file under 60 lines.
 
-**Before finishing.** The stop hook runs skrub on your change and lists what it finds. Run `npx --yes github:amishaba/skrub fix` for the ones marked safe, then fix or keep the rest with a one-line reason. Without the hook, run `fix` yourself.
+**Before finishing.** The stop hook runs skrub on your change and lists what it finds. Run `npx --yes @amishaba/skrub fix` for the ones marked safe, then fix or keep the rest with a one-line reason. Without the hook, run `fix` yourself.
 
 **Only when the task calls for it.** Don't preload these; read one when you reach that kind of work:
 

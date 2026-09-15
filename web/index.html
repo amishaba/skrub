@@ -344,7 +344,7 @@
     <div class="hero-copy">
       <div class="hero-stat">44<span> of 99 lines</span></div>
       <p class="hero-sub">on <a href="sample">one real pull request</a>: 8 files, <b>99 added lines</b>. skrub found <b>44</b> of them the agent didn't need: 13 safe to delete and 4 judgment calls for you, plus <b>3</b> places it rewrote code the repo already had. <a href="sample">review them yourself</a>.</p>
-      <p class="hero-links"><a href="https://github.com/amishaba/skrub">[ github ]</a><a href="sample">[ try the review ]</a><code>npx github:amishaba/skrub</code></p>
+      <p class="hero-links"><a href="https://github.com/amishaba/skrub">[ github ]</a><a href="sample">[ try the review ]</a><code>npx @amishaba/skrub</code></p>
     </div>
   </div>
 </section>
@@ -451,7 +451,7 @@
 </script></div>
 </section>
 <section class="sec">
-  <h2 class="sec-h"><span class="ix">02</span><span class="w">in the agent's loop</span><span class="note"><code>npx github:amishaba/skrub init</code></span></h2>
+  <h2 class="sec-h"><span class="ix">02</span><span class="w">in the agent's loop</span><span class="note"><code>npx @amishaba/skrub init</code></span></h2>
   <ol class="beliefs">
     <li><span class="bi">start</span><span class="bw">it knows the product.</span><div class="bp"><p>every session starts with what the product is, who uses it, and whose patterns to follow. on its first session in <a href="https://github.com/amishaba/agentdiff">agentdiff</a>, the agent wrote:</p><ul class="facts"><li><span class="fk">who uses it</span><span>ai engineers checking whether a prompt, tool or model change altered what their agent does, before it merges</span></li><li><span class="fk">model on</span><span>braintrust, langsmith, promptfoo</span></li></ul></div></li>
     <li><span class="bi">write</span><span class="bw">it reuses what's there.</span><div class="bp"><p>before the agent adds <code>csv.ts</code>, skrub points it at what the repo already has:</p><ul class="facts"><li><span class="fk">sumColumns</span><span>85% the same as columnTotals</span></li><li><span class="fk">sortRows</span><span>100% the same as sortBy</span></li></ul><p>in this demo the agent writes the file anyway, so the rest of the story has something to clean up.</p></div></li>

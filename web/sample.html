@@ -210,7 +210,7 @@ function render() {
   $("foot").textContent = currentId || "localhost only";
 
   if (!hunks.length) {
-    $("main").innerHTML = `<div class="empty">no hunks in this scan. run <code>npx github:amishaba/skrub</code>.</div>`;
+    $("main").innerHTML = `<div class="empty">no hunks in this scan. run <code>npx @amishaba/skrub</code>.</div>`;
     return;
   }
 
@@ -308,7 +308,7 @@ $("scans").addEventListener("change", () => loadScan($("scans").value).catch(sho
     $("scans").value = data.latest;
     await loadScan(data.latest);
   } else {
-    $("main").innerHTML = `<div class="empty">no scans yet. run <code>npx github:amishaba/skrub</code>.</div>`;
+    $("main").innerHTML = `<div class="empty">no scans yet. run <code>npx @amishaba/skrub</code>.</div>`;
   }
 })().catch(showError);
 </script>

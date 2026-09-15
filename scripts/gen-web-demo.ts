@@ -201,7 +201,7 @@ const hero = `
     <div class="hero-copy">
       <div class="hero-stat">${story.lines}<span> of ${story.added} lines</span></div>
       <p class="hero-sub">on <a href="sample">one real pull request</a>: ${story.files} files, <b>${story.added} added lines</b>. skrub found <b>${story.lines}</b> of them the agent didn't need: ${safeCount} safe to delete and ${callCount} judgment calls for you, plus <b>${rewrites}</b> places it rewrote code the repo already had. <a href="sample">review them yourself</a>.</p>
-      <p class="hero-links"><a href="${REPO}">[ github ]</a><a href="sample">[ try the review ]</a><code>npx github:amishaba/skrub</code></p>
+      <p class="hero-links"><a href="${REPO}">[ github ]</a><a href="sample">[ try the review ]</a><code>npx @amishaba/skrub</code></p>
     </div>
   </div>
 </section>
@@ -220,7 +220,7 @@ const hero = `
   <div class="hero-walk">${walkthrough(demo.hunks, prLines())}</div>
 </section>
 <section class="sec">
-  <h2 class="sec-h"><span class="ix">02</span><span class="w">in the agent's loop</span><span class="note"><code>npx github:amishaba/skrub init</code></span></h2>
+  <h2 class="sec-h"><span class="ix">02</span><span class="w">in the agent's loop</span><span class="note"><code>npx @amishaba/skrub init</code></span></h2>
   <ol class="beliefs">
     <li><span class="bi">start</span><span class="bw">it knows the product.</span><div class="bp"><p>every session starts with what the product is, who uses it, and whose patterns to follow. on its first session in <a href="https://github.com/amishaba/agentdiff">agentdiff</a>, the agent wrote:</p><ul class="facts"><li><span class="fk">who uses it</span><span>ai engineers checking whether a prompt, tool or model change altered what their agent does, before it merges</span></li><li><span class="fk">model on</span><span>braintrust, langsmith, promptfoo</span></li></ul></div></li>
     <li><span class="bi">write</span><span class="bw">it reuses what's there.</span><div class="bp"><p>before the agent adds <code>${esc(hook.file.split("/").pop()!)}</code>, skrub points it at what the repo already has:</p><ul class="facts">${hook.lines.map((l) => {
@@ -270,7 +270,7 @@ const sample = src
     "<span>apply with <code>__SKRUB__ apply</code></span>",
     () => `<span>the sample pr, reviewed · <a href="/">back to skrub</a></span>`,
   )
-  .replaceAll("__SKRUB__", "npx github:amishaba/skrub");
+  .replaceAll("__SKRUB__", "npx @amishaba/skrub");
 
 for (const [page, markers] of [
   [landing, ["og:image", 'class="hero"', 'class="pr"', 'class="beliefs"', 'href="sample"', "made by amisha"]],

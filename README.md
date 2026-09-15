@@ -39,7 +39,7 @@ the sample is a coding agent's pull request for a csv export. it changes 8 files
 ## quick start
 
 ```bash
-npx github:amishaba/skrub
+npx @amishaba/skrub
 ```
 
 run it in a typescript repo. it shows one finding at a time: `d` delete, `k` keep, `a` apply, `q` quit. nothing changes until you apply.
@@ -47,7 +47,7 @@ run it in a typescript repo. it shows one finding at a time: `d` delete, `k` kee
 to set up claude code in the repo (conventions, what the product is, hooks and the skill), run this once:
 
 ```bash
-npx github:amishaba/skrub init
+npx @amishaba/skrub init
 ```
 
 needs node 20.19 or newer.
@@ -96,7 +96,7 @@ run your install step first, so knip can read configs like `vite.config.ts`. wit
 
 ## commands
 
-install it in a project with `npm install --save-dev github:amishaba/skrub`, or use `npx github:amishaba/skrub` in place of `npx skrub`.
+install it in a project with `npm install --save-dev @amishaba/skrub`, or use `npx @amishaba/skrub` in place of `npx skrub`.
 
 ```bash
 npx skrub                 # scan, then keep or delete in the terminal
