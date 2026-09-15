@@ -3,6 +3,7 @@ import { selfCommand } from "../agent/self.ts";
 import { addPreWriteHook, addSessionStartHook, addStopHook, copySkill, gitignoreSkrubDir } from "../agent/install.ts";
 import { CONVENTIONS_FILE } from "../conventions/conventions.ts";
 import { establish } from "../conventions/establish.ts";
+import { isIgnored } from "../git/git.ts";
 
 /**
  * Set a repo up so its coding agent reuses what exists and cleans up after
@@ -36,6 +37,11 @@ export async function initCommand(opts: { cwd?: string; hook?: boolean; skill?: 
 
   console.log("skrub init");
   for (const line of done) console.log(`  ${line}`);
+  // Ignored, the setup works on this machine and never reaches anyone else's agent.
+  if (isIgnored(cwd, CONVENTIONS_FILE)) {
+    console.log("\n  .claude/ is ignored by git here, so none of this is shared: teammates' agents won't get it.");
+    console.log("  To share it, stop ignoring .claude/conventions.md, .claude/settings.json and .claude/skills/.");
+  }
   console.log("\n  other agents: add to AGENTS.md");
   console.log(`  > Follow ${CONVENTIONS_FILE}. Before finishing a change, run \`${cmd} fix\`.`);
 }

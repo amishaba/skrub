@@ -68,6 +68,8 @@ function isBarrelOnly(sf: SourceFile): boolean {
 }
 
 function isPassThrough(fn: FunctionDeclaration | MethodDeclaration): boolean {
+  // `isKnown(id): id is Known` narrows the type at every call site; that is work, not forwarding.
+  if (Node.isTypePredicate(fn.getReturnTypeNode())) return false;
   const body = fn.getBody();
   if (!body || !Node.isBlock(body)) return false;
   const stmts = body.getStatements();
@@ -78,13 +80,22 @@ function isPassThrough(fn: FunctionDeclaration | MethodDeclaration): boolean {
   if (!expr) return false;
   if (Node.isAwaitExpression(expr)) expr = expr.getExpression();
   if (!Node.isCallExpression(expr)) return false;
-  const callee = expr.getExpression().getText();
-  if (callee === "super") return false;
-  // `get(id) { return this.jobs.get(id); }` is how a class exposes one of its
-  // own fields, not a leftover wrapper.
-  if (/^this\.[\w$#]+\??\./.test(callee)) return false;
+  const callee = expr.getExpression();
+  if (callee.getText() === "super") return false;
+  // A method called on a value names a lookup on that data: `get(id) { return
+  // this.jobs.get(id); }`, `isKnown(id) { return KNOWN.includes(id); }`. Only a
+  // plain function, or one reached through an import, is being forwarded to.
+  if (Node.isPropertyAccessExpression(callee) && !isImported(callee.getExpression())) return false;
   const params = fn.getParameters().map((p) => p.getName());
   const args = expr.getArguments().map((a) => a.getText());
   if (params.length === 0 || params.length !== args.length) return false;
   return params.every((p, i) => args[i] === p);
+}
+
+/** `fs` in `fs.readFile(p)` when `fs` is an import: the call goes to another module's function. */
+function isImported(node: Node): boolean {
+  if (!Node.isIdentifier(node)) return false;
+  return (node.getSymbol()?.getDeclarations() ?? []).some(
+    (d) => Node.isNamespaceImport(d) || Node.isImportClause(d) || Node.isImportSpecifier(d),
+  );
 }

@@ -165,3 +165,22 @@ test("another app in the same repo isn't held to this one's conventions", async 
     ["src/newThing.ts"],
   );
 });
+
+test("the file says where its rules hold, and describes another app's own names and shared code", async () => {
+  const page = (name: string) => `import { Card } from "./Card.tsx";\nexport function ${name}() {\n  return <Card />;\n}\n`;
+  const dir = project(
+    house({
+      "web/tsconfig.json": "{}\n",
+      "web/src/Card.tsx": "export function Card() {\n  return <div />;\n}\n",
+      "web/src/PageOne.tsx": page("PageOne"),
+      "web/src/PageTwo.tsx": page("PageTwo"),
+      "web/src/PageThree.tsx": page("PageThree"),
+    }),
+  );
+  git(dir, "init", "-q");
+  const text = renderConventions(mine(await loadProgram(dir, await loadConfig(dir))), "");
+  assert.match(text, /read from the code in src\/, and `skrub` checks them there/);
+  assert.match(text, /- web\/ is its own app, not checked: component \(\.tsx\) file names: PascalCase \(4 of 4\)/);
+  assert.match(text, /- `Card`: component in web\/src\/Card\.tsx, used by 3 files/);
+  assert.match(text, /^file-names: kebab-case$/m, "the src/ rules are unchanged");
+});

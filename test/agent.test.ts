@@ -1,14 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { loadConfig } from "../src/config.ts";
 import { diffScope, parseUnifiedDiff } from "../src/git/diff.ts";
 import { analyze } from "../src/scan/analyze.ts";
 import { inDiff } from "../src/scan/scope.ts";
-import { addStopHook } from "../src/agent/install.ts";
+import { addStopHook, gitignoreSkrubDir } from "../src/agent/install.ts";
 import { runHint, selfCommand } from "../src/agent/self.ts";
 import { hunk, project } from "./helpers.ts";
 
@@ -224,4 +224,15 @@ test("a repo with no commits yet is scanned whole, by hand and by the Stop hook,
   assert.match(check.stdout, /Exported dead is never referenced/);
   const out = skrub(dir, ["hook"], JSON.stringify({ session_id: "s", cwd: dir }));
   assert.equal(JSON.parse(out).decision, "block");
+});
+
+test("init leaves .gitignore alone when git already ignores .skrub/ some other way", async () => {
+  const dir = project({ "src/index.ts": "export const x = 1;\n" });
+  execFileSync("git", ["init", "-q"], { cwd: dir });
+  writeFileSync(path.join(dir, ".git/info/exclude"), ".skrub/\n");
+  assert.equal(await gitignoreSkrubDir(dir), false);
+  assert.equal(existsSync(path.join(dir, ".gitignore")), false);
+  rmSync(path.join(dir, ".git/info/exclude"));
+  assert.equal(await gitignoreSkrubDir(dir), true);
+  assert.equal(readFileSync(path.join(dir, ".gitignore"), "utf8"), ".skrub/\n");
 });

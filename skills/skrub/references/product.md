@@ -32,8 +32,6 @@ Start from the `## product` section of `.claude/conventions.md`: what this produ
 
 These are examples to start from, not a list to pick from. Use the products this repo's users actually use, even if they aren't here.
 
-These are examples to start from, not a list to pick from. Use the products this repo's users actually use, even if they aren't here.
-
 - **Devtools and platforms:** Sentry, Vercel, Stripe, Linear, GitHub, Supabase.
 - **Errors and observability:** Sentry, Datadog, Honeycomb, Grafana.
 - **AI and LLM tooling:** Braintrust, LangSmith, Langfuse, the OpenAI and Anthropic consoles.

@@ -107,20 +107,35 @@ test("a file reached only by URL (fork, new Worker, import.meta.resolve) is live
   assert.deepEqual(files, ["src/elsewhere.ts"]);
 });
 
-test("a method handing off to its own field is not glue; a function that only forwards is", async () => {
+test("a method on a value or a type guard is not glue; a function that only forwards is", async () => {
   const dir = project({
     "src/index.ts":
-      'import { Registry, lookup } from "./registry.ts";\n' +
+      'import { Registry, isKnown, isTyped, lookup, shout } from "./registry.ts";\n' +
       "export function main() {\n" +
-      '  return [new Registry().get("a"), lookup("a")];\n' +
+      '  return [new Registry().get("a"), lookup("a"), isKnown("a"), isTyped("a"), shout("a")];\n' +
       "}\n",
     "src/registry.ts":
+      'import * as text from "./text.ts";\n' +
       "const table = new Map<string, number>();\n" +
+      'const KNOWN = ["a", "b"] as const;\n' +
+      "type Known = (typeof KNOWN)[number];\n" +
       "function find(id: string) {\n" +
       "  return table.get(id) ?? 0;\n" +
       "}\n" +
+      "function known(id: string) {\n" +
+      "  return (KNOWN as readonly string[]).includes(id);\n" +
+      "}\n" +
       "export function lookup(id: string) {\n" +
       "  return find(id);\n" +
+      "}\n" +
+      "export function isKnown(id: string) {\n" +
+      "  return (KNOWN as readonly string[]).includes(id);\n" +
+      "}\n" +
+      "export function isTyped(id: string): id is Known {\n" +
+      "  return known(id);\n" +
+      "}\n" +
+      "export function shout(s: string) {\n" +
+      "  return text.upper(s);\n" +
       "}\n" +
       "export class Registry {\n" +
       "  private items = new Map<string, number>();\n" +
@@ -128,10 +143,11 @@ test("a method handing off to its own field is not glue; a function that only fo
       "    return this.items.get(id);\n" +
       "  }\n" +
       "}\n",
+    "src/text.ts": "export function upper(s: string) {\n  return s.toUpperCase();\n}\n",
   });
   const { hunks } = await analyze(dir, await loadConfig(dir), { changed: null, llm: false });
   const glue = hunks.filter((h) => h.kind === "glue").map((h) => h.reason);
-  assert.deepEqual(glue, ["lookup only forwards to another function."]);
+  assert.deepEqual(glue, ["lookup only forwards to another function.", "shout only forwards to another function."]);
 });
 
 test("an import is unused when its own file never reads it, even if other files use the symbol", async () => {

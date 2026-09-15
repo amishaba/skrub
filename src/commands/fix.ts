@@ -1,5 +1,5 @@
 import path from "node:path";
-import { fixable } from "../hunk.ts";
+import { type Hunk, fixable, isApplicable, removesLines } from "../hunk.ts";
 import { fail, errMessage } from "../lib/errors.ts";
 import { runScan } from "../scan/run.ts";
 import type { Scan } from "../scan/summary.ts";
@@ -37,7 +37,7 @@ export async function fixCommand(opts: FixOpts): Promise<void> {
     console.log(`skrub fix  nothing ${opts.all ? "to delete" : "safe to delete"}`);
   } else {
     console.log(`skrub fix  ${opts.dryRun ? "would apply" : "applied"}: ${headline(done)}`);
-    for (const line of findingLines(done)) console.log(`  ${line}`);
+    for (const line of listed(done)) console.log(`  ${line}`);
   }
   if (stopped) console.log(`\n  stopped after an earlier pass: ${stopped}`);
   if (verified && !opts.dryRun) console.log(`\n  checked with ${verified}: passes`);
@@ -50,6 +50,21 @@ export async function fixCommand(opts: FixOpts): Promise<void> {
     console.log(`\n  left for review (${left.length}): not provably dead; read, then delete or keep`);
     for (const line of findingLines(left)) console.log(`  ${line}`);
   }
+}
+
+/** Past a handful, `export` keywords dropped from things used only in their own file are counted and named, not listed one per line. */
+const DROPS_LISTED = 5;
+
+/** Every deletion on its own line; export drops folded into one line when there are many, so the deletions stay visible. */
+function listed(done: Hunk[]): string[] {
+  const drops = done.filter((h) => isApplicable(h) && !removesLines(h));
+  if (drops.length <= DROPS_LISTED) return findingLines(done);
+  const names = drops.flatMap((h) => h.symbols ?? []);
+  const named = names.length > 8 ? `${names.slice(0, 8).join(", ")}, …` : names.join(", ");
+  return [
+    ...findingLines(done.filter((h) => !drops.includes(h))),
+    `+ ${drops.length} exports used only in their own file lose \`export\`${named ? `: ${named}` : ""} (--json lists each)`,
+  ];
 }
 
 /** Exit 1 when there is something to delete (safe only, unless --all). For CI and scripts. */

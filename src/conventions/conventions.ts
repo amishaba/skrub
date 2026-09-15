@@ -47,6 +47,10 @@ export interface Mined {
   observations: Observation[];
   /** Source files read (the config's include, `src` by default). */
   sources: number;
+  /** The include roots the rules are read from and checked in, e.g. ["src"]; empty means the whole repo. */
+  roots: string[];
+  /** Other apps in the repo (a folder with its own tsconfig): not checked, but their file naming is described for the agent. */
+  apps: { root: string; observations: Observation[] }[];
   /** Top-level folders under the source roots, as a hint about layout. */
   folders: string[];
   /** What other files already import most: the first place to look before writing something new. */
@@ -55,6 +59,8 @@ export interface Mined {
 
 /** How many shared exports the file lists; it stays short enough to read every session. */
 const SHARED_SHOWN = 10;
+/** And how many more for each other app in the repo. */
+const APP_SHARED_SHOWN = 5;
 
 const LABEL: Record<RuleKey, string> = {
   "file-names": "file names",
@@ -83,8 +89,7 @@ export function mine(program: Program): Mined {
 
   const observations: Observation[] = [];
   const nameCases = (files: string[]) => files.map((f) => caseOf(stem(f))).filter((c): c is string => c != null);
-  observations.push(majority("file-names", nameCases(all.filter((f) => !/\.[jt]sx$/.test(f) && !TEST_FILE.test(f)))));
-  observations.push(majority("component-files", nameCases(all.filter((f) => /\.[jt]sx$/.test(f) && !TEST_FILE.test(f)))));
+  observations.push(...fileNaming(all, nameCases));
   observations.push(majority("tests", tests.map((f) => (TEST_DIR.test(f) ? "separate-folder" : "next-to-source"))));
   observations.push(majority("test-suffix", tests.map((f) => `.${TEST_FILE.exec(f)![1]}`)));
 
@@ -117,7 +122,56 @@ export function mine(program: Program): Mined {
 
   // "src/detect/unused.ts" → "src/detect/": the second level is where layout shows
   const folders = [...new Set(source.map(({ rel }) => rel.split("/")).filter((p) => p.length >= 3).map((p) => `${p[0]}/${p[1]}/`))].sort();
-  return { observations, folders, sources: source.length, shared: sharedExports(program).slice(0, SHARED_SHOWN) };
+  const apps = otherApps(program)
+    .map(({ root, files }) => ({ root, observations: fileNaming(files, nameCases).filter((o) => o.total > 0) }))
+    .filter((a) => a.observations.length > 0);
+  return {
+    observations,
+    folders,
+    sources: source.length,
+    roots: program.include.map((p) => p.replace(/\/$/, "")),
+    apps,
+    shared: [
+      ...sharedExports(program).slice(0, SHARED_SHOWN),
+      ...otherApps(program).flatMap(({ files }) => sharedExports(program, 2, sourcesOf(program, files)).slice(0, APP_SHARED_SHOWN)),
+    ],
+  };
+}
+
+/** The loaded source files among `files`, tests left out. */
+function sourcesOf(program: Program, files: string[]): Program["files"] {
+  return files
+    .filter((f) => !TEST_FILE.test(f) && !TEST_DIR.test(f))
+    .flatMap((rel) => {
+      const sf = program.project.getSourceFile(path.join(program.cwd, rel));
+      return sf ? [{ sf, rel }] : [];
+    });
+}
+
+/** How non-test files are named: plain modules, and .tsx/.jsx components apart. */
+function fileNaming(files: string[], nameCases: (files: string[]) => string[]): Observation[] {
+  const code = files.filter((f) => !TEST_FILE.test(f));
+  return [
+    majority("file-names", nameCases(code.filter((f) => !/\.[jt]sx$/.test(f)))),
+    majority("component-files", nameCases(code.filter((f) => /\.[jt]sx$/.test(f)))),
+  ];
+}
+
+/**
+ * Folders outside the include roots with their own tsconfig: a web/ app next to
+ * a CLI's src/. Their names follow their own habits, so the rules above don't
+ * apply there; the agent is told what those habits are instead.
+ */
+function otherApps(program: Program): { root: string; files: string[] }[] {
+  const files = listFiles(program.cwd) ?? [];
+  const roots = files
+    .filter((f) => f.endsWith("/tsconfig.json"))
+    .map((f) => path.posix.dirname(f))
+    .filter((root) => !SKIP_DIR.test(`${root}/`) && !isIncluded(`${root}/x.ts`, program.include));
+  return roots.map((root) => ({
+    root,
+    files: files.filter((f) => f.startsWith(`${root}/`) && CODE.test(f) && !SKIP_DIR.test(f) && !f.endsWith(".d.ts")),
+  }));
 }
 
 /** Keep the rule only if the majority is the habit worth enforcing; "most names lack a prefix" is no rule. */
@@ -146,7 +200,10 @@ export function renderConventions(mined: Mined, notes: string): string {
   const rules = rulesFrom(mined);
   const front = Object.entries(rules).map(([k, v]) => `${k}: ${v}`);
   const described = mined.observations.filter((f) => f.total > 0).map(describe);
-  if (mined.folders.length > 0) described.push(`- layout: ${mined.folders.slice(0, 12).join(", ")}`);
+  if (mined.folders.length > 0) described.push(`- layout: ${mined.folders.join(", ")}`);
+  for (const app of mined.apps)
+    described.push(`- ${app.root}/ is its own app, not checked: ${app.observations.map((o) => describe(o).slice(2)).join("; ")}`);
+  const where = mined.roots.length ? mined.roots.map((r) => `${r}/`).join(", ") : "this repo";
   return [
     "---",
     ...front,
@@ -154,8 +211,9 @@ export function renderConventions(mined: Mined, notes: string): string {
     "",
     "# conventions",
     "",
-    "The settings above are checked on every change by `skrub` and were read from this repo's own code; " +
-      "`skrub conventions` shows drift, `--write` refreshes them. Follow them in new code.",
+    `The settings above were read from the code in ${where}, and \`skrub\` checks them there on every change; ` +
+      "`skrub conventions` shows drift, `--write` refreshes them. Follow them in new code there." +
+      (mined.apps.length ? " In another app listed below, follow that app's own files instead." : ""),
     "",
     "## from the code",
     "",

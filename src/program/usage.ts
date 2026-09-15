@@ -41,11 +41,11 @@ export function importers(program: Program, opts: { types?: boolean } = {}): Map
   return out;
 }
 
-/** Functions, components, hooks and classes two or more files import, most used first. */
-export function sharedExports(program: Program, min = 2): Shared[] {
+/** Functions, components, hooks and classes two or more files import, most used first; from the scanned files unless given others. */
+export function sharedExports(program: Program, min = 2, files: Program["files"] = program.files): Shared[] {
   const used = importers(program);
   const out: Shared[] = [];
-  for (const { sf, rel: file } of program.files) {
+  for (const { sf, rel: file } of files) {
     for (const [name, decls] of sf.getExportedDeclarations()) {
       const count = used.get(`${file}#${name}`)?.size ?? 0;
       if (count < min) continue;

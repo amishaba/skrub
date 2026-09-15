@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { exists } from "../lib/fs.ts";
+import { isIgnored } from "../git/git.ts";
 import { fileURLToPath } from "node:url";
 import { SKILL_COMMAND } from "./self.ts";
 
@@ -107,8 +108,9 @@ function isSkrubHook(command: string): boolean {
   return /skrub/.test(command) && /\bhook\s*$/.test(command);
 }
 
-/** Add .skrub/ to .gitignore; false if it was already there. */
+/** Add .skrub/ to .gitignore; false if git already ignores it (there, or in .git/info/exclude). */
 export async function gitignoreSkrubDir(cwd: string): Promise<boolean> {
+  if (isIgnored(cwd, ".skrub/")) return false;
   const file = path.join(cwd, ".gitignore");
   const text = (await exists(file)) ? await fs.readFile(file, "utf8") : "";
   if (text.split("\n").some((l) => l.trim() === ".skrub/" || l.trim() === ".skrub")) return false;

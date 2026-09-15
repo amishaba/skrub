@@ -52,6 +52,11 @@ export function listFiles(cwd: string): string[] | null {
   return res.stdout.split("\0").filter((f) => f && existsSync(path.join(cwd, f)));
 }
 
+/** Whether git ignores `rel` (from .gitignore, .git/info/exclude or a global excludes file); false outside a git repo. */
+export function isIgnored(cwd: string, rel: string): boolean {
+  return spawnSync("git", ["check-ignore", "-q", rel], { cwd }).status === 0;
+}
+
 export async function refExists(ref: string, cwd: string): Promise<boolean> {
   try {
     await git(["rev-parse", "--verify", "--quiet", `${ref}^{commit}`], cwd);
