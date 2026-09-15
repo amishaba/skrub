@@ -1,0 +1,57 @@
+{
+  "name": "@amishaba/skrub",
+  "version": "0.1.0",
+  "description": "Clean code & product sense for coding agents: deletes what knip finds unused and typechecks the result, points new code at what the repo already has, and gives Claude Code the product context to build the right thing. Not a bug finder.",
+  "license": "MIT",
+  "homepage": "https://unvibe-eight.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amishaba/unvibe.git"
+  },
+  "type": "module",
+  "bin": {
+    "skrub": "bin/skrub.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "skills",
+    "tsconfig.json",
+    "README.md",
+    "LICENSE",
+    ".env.example",
+    "web"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "node bin/skrub.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "check": "npm run typecheck && npm test",
+    "demo:bake": "node --import tsx scripts/bake-demo.ts",
+    "demo:web": "node --import tsx scripts/gen-web-demo.ts",
+    "prepublishOnly": "npm run check",
+    "build": "npm run demo:web",
+    "preview": "node bin/skrub.mjs view --web --no-open"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "diff": "^7.0.0",
+    "ink": "^5.2.1",
+    "knip": "^6.41.0",
+    "react": "^18.3.1",
+    "ts-morph": "^27.0.2",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@types/diff": "^7.0.2",
+    "@types/node": "^22.15.0",
+    "@types/react": "^18.3.23"
+  }
+}

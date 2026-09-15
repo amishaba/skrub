@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>skrub · sample review</title>
+<meta name="robots" content="noindex" />
+<!-- three bars, the middle one picked out: lines of code, one of them skrub's (web/favicon.svg) -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #000;
+    --ink: #e8e8e8;
+    --dim: rgba(255, 255, 255, 0.45);
+    --faint: rgba(255, 255, 255, 0.28);
+    --rule: rgba(255, 255, 255, 0.18);
+    --wash: rgba(255, 255, 255, 0.08);
+    --green: #3ddc84;
+    --serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font: 13px/1.6 var(--mono);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    border-left: 1px solid var(--rule);
+    border-right: 1px solid var(--rule);
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* masthead */
+  header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: baseline; gap: 22px; flex-wrap: wrap;
+    padding: 16px 28px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--rule);
+  }
+  .brand {
+    font-family: var(--serif); font-style: italic; font-size: 30px;
+    line-height: 1; letter-spacing: -0.01em; text-decoration: none;
+  }
+  .brand em { color: var(--dim); font-style: normal; }
+  nav.filters { display: flex; gap: 16px; flex-wrap: wrap; }
+  nav.filters button {
+    font: 12px/1 var(--mono); letter-spacing: 0.02em;
+    color: var(--dim); background: none; border: 0; padding: 4px 0; cursor: pointer;
+  }
+  nav.filters button:hover { color: var(--ink); }
+  nav.filters button.on { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+  .spacer { margin-left: auto; }
+  select#scans {
+    font: 12px var(--mono); color: var(--dim);
+    background: var(--bg); border: 1px solid var(--rule); border-radius: 0;
+    padding: 5px 8px;
+  }
+
+  main { padding: 0; }
+
+  /* kpi strip */
+  .kpis {
+    display: flex; gap: 40px; flex-wrap: wrap;
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--dim); font-variant-numeric: tabular-nums;
+  }
+  .kpis b { color: var(--ink); font-weight: 500; font-size: 15px; }
+  .kpis .lead { font-family: var(--serif); font-size: 22px; color: var(--ink); margin-right: auto; }
+
+  /* hunk rows */
+  .hunk {
+    display: grid; grid-template-columns: 200px 1fr 200px;
+    border-top: 1px solid var(--rule);
+  }
+  .hunk:first-child { border-top: 0; }
+  .col { min-width:0; padding: 26px 24px; }
+  .col.idx { border-right: 1px solid var(--rule); }
+  .col.side { border-left: 1px solid var(--rule); }
+  .n { display: block; font-family: var(--serif); font-size: 40px; line-height: 0.9; color: var(--faint); }
+  .file { display: block; margin-top: 12px; color: var(--dim); overflow-wrap: anywhere; }
+  .ln { color: var(--dim); }
+  .reason { margin: 0 0 14px; color: var(--ink); }
+  pre {
+    margin: 0; padding: 0 0 0 16px;
+    border-left: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 12px; line-height: 1.7;
+    color: var(--dim); overflow: auto; max-height: 15rem; white-space: pre;
+  }
+  .kind { color: var(--dim); text-transform: lowercase; letter-spacing: 0.02em; white-space: nowrap; }
+  .kind .safe { color: var(--ink); }
+  .choice { display: flex; gap: 8px; margin-top: 16px; }
+  .choice button {
+    font: 12px var(--mono); color: var(--dim);
+    background: none; border: 1px solid var(--rule); border-radius: 0;
+    padding: 5px 10px; cursor: pointer;
+  }
+  .choice button:hover { color: var(--ink); background: var(--wash); }
+  .choice button.on { color: var(--ink); background: var(--wash); border-color: var(--ink); }
+
+  .empty { padding: 80px 28px; color: var(--dim); font-family: var(--serif); font-size: 24px; }
+
+  footer {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap;
+    padding: 26px 28px 40px; margin-top: 40px;
+    border-top: 1px solid var(--rule);
+    color: var(--dim); font-size: 11px;
+  }
+  footer .fin { font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--ink); }
+  footer code { color: var(--green); }
+
+  @media (max-width: 720px) {
+    .hunk { grid-template-columns: 1fr; }
+    .col.idx, .col.side { border-right: 0; border-left: 0; }
+    .col.idx { border-bottom: 1px solid var(--rule); display: flex; align-items: baseline; gap: 14px; }
+    .n { font-size: 26px; }
+    .file { margin-top: 0; }
+  }
+</style>
+
+<script>
+// --- static demo shim: answer /api/* from the baked scan (web/scan.json) ---
+window.__SKRUB_DEMO__ = {"summary":{"id":"sample-pr","createdAt":"2026-10-05T21:40:09.000Z","cwd":"test/fixtures/sample-pr","against":"eaa8c462258ac02ca72c2af7b3392cb36a4a3797","staged":false,"hunks":22,"lines":44,"tokens":358,"byKind":{"unused_import":2,"unused_file":2,"claudeism":5,"unused_export":4,"needless_export":1,"glue":2,"dup":1,"reuse":2,"convention":2,"fold":1},"llm":null},"hunks":[{"id":"unused-import-src-export-csv-ts-2","file":"src/export/csv.ts","startLine":2,"endLine":2,"kind":"unused_import","confidence":0.95,"reason":"Unused import from ../lib/format.ts.","text":"import { formatDate } from \"../lib/format.ts\";\n","safe":true,"action":"delete","symbols":["formatDate"]},{"id":"unused-import-src-report-ts-25","file":"src/report.ts","startLine":25,"endLine":25,"kind":"unused_import","confidence":0.95,"reason":"Unused import from ./export/csv.ts.","text":"import { sortRows } from \"./export/csv.ts\";\n","safe":true,"action":"delete","symbols":["sortRows"]},{"id":"unused-file-src-export-draft-export-ts","file":"src/export/draft-export.ts","startLine":1,"endLine":8,"kind":"unused_file","confidence":0.9,"reason":"File is never imported and is not an entry.","text":"// First pass at exporting. Replaced by csv.ts.\nimport type { Report } from \"../report.ts\";\n\nexport function exportReport(report: Report, format: \"csv\" | \"json\"): string {\n  return format === \"csv\"\n    ? report.rows.map((row) => row.cells.join(\",\")).join(\"\\n\")\n    : JSON.stringify(report.rows);\n}\n","safe":true,"action":"delete","symbols":["draft-export"]},{"id":"unused-file-src-export-json-ts","file":"src/export/json.ts","startLine":1,"endLine":6,"kind":"unused_file","confidence":0.9,"reason":"File is never imported and is not an entry.","text":"import type { Report } from \"../report.ts\";\n\nexport function toJson(report: Report): string {\n  const rows = report.rows.map((row) => row.cells);\n  return JSON.stringify({ title: report.title, columns: report.columns, rows }, null, 2);\n}\n","safe":true,"action":"delete","symbols":["json"]},{"id":"claudeism-src-cli-ts-23","file":"src/cli.ts","startLine":23,"endLine":23,"kind":"claudeism","confidence":0.9,"reason":"Comment says what the next lines already say.","text":"// Write the CSV file next to the report.\n","safe":true,"action":"delete"},{"id":"claudeism-src-export-csv-ts-4","file":"src/export/csv.ts","startLine":4,"endLine":4,"kind":"claudeism","confidence":0.9,"reason":"Comment says what the next lines already say.","text":"// Convert the report rows into CSV text.\n","safe":true,"action":"delete"},{"id":"claudeism-src-export-csv-ts-28","file":"src/export/csv.ts","startLine":28,"endLine":28,"kind":"claudeism","confidence":0.9,"reason":"Comment says what the next lines already say.","text":"// Escape a cell.\n","safe":true,"action":"delete"},{"id":"claudeism-src-lib-format-ts-9","file":"src/lib/format.ts","startLine":9,"endLine":9,"kind":"claudeism","confidence":0.9,"reason":"Comment restates the next identifier.","text":"// helper\n","safe":true,"action":"delete"},{"id":"unused-export-src-export-csv-ts-46-formatrowlegacy","file":"src/export/csv.ts","startLine":46,"endLine":52,"kind":"unused_export","confidence":0.85,"reason":"Exported formatRowLegacy is never referenced.","text":"export function formatRowLegacy(row: Row): string {\n  const out: string[] = [];\n  for (const cell of row.cells) {\n    out.push(cell === null ? \"\" : String(cell));\n  }\n  return out.join(\";\");\n}\n","safe":true,"action":"delete","symbols":["formatRowLegacy"]},{"id":"unused-export-src-lib-format-ts-10-helper","file":"src/lib/format.ts","startLine":10,"endLine":12,"kind":"unused_export","confidence":0.85,"reason":"Exported helper is never referenced.","text":"export function helper(value: number): string {\n  return value.toFixed(2);\n}\n","safe":true,"action":"delete","symbols":["helper"]},{"id":"needless-export-src-export-csv-ts-34-formatrow","file":"src/export/csv.ts","startLine":34,"endLine":34,"kind":"needless_export","confidence":0.85,"reason":"formatRow is only used in this file; it doesn't need `export`.","text":"export function formatRow(row: Row): string {\n","replacement":"function formatRow(row: Row): string {\n","safe":true,"action":"delete","symbols":["formatRow"]},{"id":"unused-export-src-export-csv-ts-54-csv-version","file":"src/export/csv.ts","startLine":54,"endLine":54,"kind":"unused_export","confidence":0.85,"reason":"Exported CSV_VERSION is never referenced.","text":"export const CSV_VERSION = 1;\n","safe":true,"action":"delete","symbols":["CSV_VERSION"]},{"id":"unused-export-src-report-ts-27-data","file":"src/report.ts","startLine":27,"endLine":27,"kind":"unused_export","confidence":0.85,"reason":"Exported data is never referenced.","text":"export const data = { exportEnabled: true };\n","safe":true,"action":"delete","symbols":["data"]},{"id":"claudeism-src-report-ts-26","file":"src/report.ts","startLine":26,"endLine":26,"kind":"claudeism","confidence":0.9,"reason":"TODO: implement, but the body is already there.","text":"// TODO: implement csv export\n","safe":false,"action":"delete"},{"id":"glue-barrel-src-export-index-ts","file":"src/export/index.ts","startLine":1,"endLine":1,"kind":"glue","confidence":0.8,"reason":"Barrel/utils file that only re-exports.","text":"export * from \"./csv.ts\";\n","safe":false,"action":"delete"},{"id":"glue-src-export-csv-ts-24","file":"src/export/csv.ts","startLine":24,"endLine":26,"kind":"glue","confidence":0.75,"reason":"getRows only forwards to another function.","text":"function getRows(report: Report): Row[] {\n  return loadRows(report);\n}\n","safe":false,"action":"delete"},{"id":"dup-src-export-csv-ts-38","file":"src/export/csv.ts","startLine":38,"endLine":44,"kind":"dup","confidence":0.7,"reason":"Same as sortBy in src/report.ts:17. Use that one instead.","text":"export function sortRows(rows: Row[], key: string): Row[] {\n  return [...rows].sort((a, b) => {\n    const x = String(a.values[key] ?? \"\");\n    const y = String(b.values[key] ?? \"\");\n    return x.localeCompare(y);\n  });\n}\n","safe":false,"action":"delete"},{"id":"reuse-src-export-csv-ts-13","file":"src/export/csv.ts","startLine":13,"endLine":22,"kind":"reuse","confidence":0.6119565217391305,"reason":"85% the same as columnTotals in src/report-totals.ts:3. Reuse or extend that one instead of keeping a second version.","text":"function sumColumns(report: Report): Record<string, number> {\n  const sums: Record<string, number> = {};\n  for (const column of report.columns) {\n    sums[column] = report.rows.reduce((total, row) => {\n      const value = row.values[column];\n      return typeof value === \"number\" ? total + Math.round(value) : total;\n    }, 0);\n  }\n  return sums;\n}\n","safe":false,"action":"comment"},{"id":"convention-file-names-src-export-csvname-ts-1","file":"src/export/csvName.ts","startLine":1,"endLine":1,"kind":"convention","confidence":0.6,"reason":"\"csvName.ts\" is camelCase; this repo's file names: kebab-case (.claude/conventions.md).","text":"import type { Report } from \"../report.ts\";\n","safe":false,"action":"comment"},{"id":"convention-exports-src-export-csvname-ts-4","file":"src/export/csvName.ts","startLine":4,"endLine":4,"kind":"convention","confidence":0.6,"reason":"A default export; this repo's exports: named (.claude/conventions.md).","text":"export default function csvName(report: Report): string {\n","safe":false,"action":"comment"},{"id":"reuse-src-cli-ts-30","file":"src/cli.ts","startLine":30,"endLine":30,"kind":"reuse","confidence":0.55,"reason":"fetchReport in src/load-report.ts:20 already calls GET /api/reports/:param. Call it instead of fetching here.","text":"  const res = await fetch(`https://reports.example.com/api/reports/${sortField}`);\n","safe":false,"action":"comment"},{"id":"fold-src-export-csvname-ts","file":"src/export/csvName.ts","startLine":1,"endLine":6,"kind":"fold","confidence":0.45,"reason":"Only src/cli.ts uses this file. Keep it in src/cli.ts until a second file needs it.","text":"import type { Report } from \"../report.ts\";\nimport { slugify } from \"../lib/text.ts\";\n\nexport default function csvName(report: Report): string {\n  return `${slugify(report.title)}.csv`;\n}\n","safe":false,"action":"comment"}]};
+(function () {
+  const D = window.__SKRUB_DEMO__;
+  const KEY = "skrub-demo-decisions";
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
+  const save = (d) => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+  const reply = (obj) => new Response(JSON.stringify(obj), { headers: { "content-type": "application/json" } });
+  const real = window.fetch ? window.fetch.bind(window) : null;
+  window.fetch = (url, opts) => {
+    const u = String(url);
+    if (u.startsWith("/api/scans")) return Promise.resolve(reply({ latest: D.summary.id, scans: [D.summary] }));
+    if (u.startsWith("/api/scan?")) return Promise.resolve(reply({ ...D, decisions: load() }));
+    if (u.startsWith("/api/decision")) {
+      try {
+        const body = JSON.parse((opts && opts.body) || "{}");
+        const d = load(); d[body.hunkId] = body.decision; save(d);
+        return Promise.resolve(reply({ ok: true, decisions: d }));
+      } catch { return Promise.resolve(reply({ ok: false })); }
+    }
+    return real ? real(url, opts) : Promise.reject(new Error("offline demo"));
+  };
+})();
+</script>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="brand" href="/">skrub<em>.</em></a>
+  <nav class="filters" id="filters">
+    <button type="button" data-filter="all" class="on">all</button>
+    <button type="button" data-filter="safe">safe</button>
+    <button type="button" data-filter="glue">glue</button>
+    <button type="button" data-filter="comments">comments</button>
+    <button type="button" data-filter="reuse">reuse</button>
+    <button type="button" data-filter="quality">quality</button>
+  </nav>
+  <span class="spacer"></span>
+  <select id="scans" aria-label="scan"></select>
+</header>
+<p id="error" role="alert" hidden style="padding:16px 28px"></p>
+<main id="main"><div class="empty">loading…</div></main>
+<footer>
+  <span class="fin">fin</span>
+  <span id="foot">localhost only</span>
+  <span>made by amisha</span>
+  <span>the sample pr, reviewed · <a href="/">back to skrub</a></span>
+</footer>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+let scans = [];
+let currentId = "";
+let hunks = [];
+let decisions = {};
+let filter = "all";
+
+function matchesFilter(h) {
+  if (filter === "all") return true;
+  if (filter === "safe") return h.safe;
+  if (filter === "glue") return h.kind === "glue";
+  if (filter === "comments") return h.kind === "claudeism";
+  if (filter === "reuse") return h.kind === "dup" || h.kind === "reuse" || h.kind === "fold";
+  if (filter === "quality") return h.kind === "naming" || h.kind === "pattern";
+  return true;
+}
+
+function lines(h) { return h.endLine - h.startLine + 1; }
+
+function render() {
+  const shown = hunks.filter(matchesFilter);
+  const accepted = hunks.filter((h) => h.action !== "comment" && decisions[h.id] === "accept");
+  const lineN = shown.filter(h => h.action !== "comment" && h.replacement == null).reduce((n, h) => n + lines(h), 0);
+  $("foot").textContent = currentId || "localhost only";
+
+  if (!hunks.length) {
+    $("main").innerHTML = `<div class="empty">no hunks in this scan. run <code>npx github:amishaba/skrub</code>.</div>`;
+    return;
+  }
+
+  $("main").innerHTML = `
+    <div class="kpis">
+      <span class="lead">the extra stuff.</span>
+      <span><b>${shown.length}</b> hunks</span>
+      <span><b>${lineN}</b> suggested deletion lines</span>
+      <span><b>${accepted.length}</b> to delete</span>
+    </div>
+    ${shown.map((h, i) => {
+      const d = decisions[h.id];
+      const idx = String(i + 1).padStart(2, "0");
+      return `<article class="hunk" data-id="${esc(h.id)}">
+        <div class="col idx">
+          <span class="n">${idx}</span>
+          <span class="file">${esc(h.file).replace(/\//g, "/<wbr>")}<span class="ln">:${h.startLine}</span></span>
+        </div>
+        <div class="col main">
+          <p class="reason">${esc(h.reason)}</p>
+          ${h.replacement != null
+            ? `<details><summary>view change · 1 line</summary><pre>${esc("- " + h.text.replace(/\n$/, ""))}\n${esc("+ " + h.replacement.replace(/\n$/, ""))}</pre></details>`
+            : `<details><summary>view code · ${lines(h)} ${lines(h) === 1 ? "line" : "lines"}</summary><pre>${esc(h.text)}</pre></details>`}
+        </div>
+        <div class="col side">
+          <div class="kind">${esc(h.kind)}${h.safe ? ' <span class="safe">· safe</span>' : ""}</div>
+          <div class="choice">
+            <button type="button" data-act="skip" aria-pressed="${d === "skip"}" class="${d === "skip" ? "on" : ""}">keep</button>
+            ${h.action !== "comment" ? `<button type="button" data-act="accept" aria-pressed="${d === "accept"}" class="${d === "accept" ? "on" : ""}">${h.replacement != null ? "apply" : "delete"}</button>` : `<span>naming note · no deletion</span>`}
+          </div>
+        </div>
+      </article>`;
+    }).join("")}
+  `;
+}
+
+async function loadScan(id) {
+  const requestedId = id;
+  currentId = id;
+  hunks = [];
+  decisions = {};
+  $("error").hidden = true;
+  $("main").innerHTML = `<div class="empty">loading…</div>`;
+  const res = await fetch("/api/scan?id=" + encodeURIComponent(id));
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "could not load scan");
+  if (currentId !== requestedId) return;
+  hunks = data.hunks || [];
+  decisions = data.decisions || {};
+  render();
+}
+
+async function decide(hunkId, decision) {
+  $("error").hidden = true;
+  const scanId = currentId;
+  const res = await fetch("/api/decision", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ id: scanId, hunkId, decision }),
+  });
+  if (!res.ok) throw new Error("could not save choice; please try again");
+  if (currentId === scanId) { decisions[hunkId] = decision; render(); }
+}
+
+function showError(err) { if ($("main").querySelector(".empty")) $("main").innerHTML = `<div class="empty">review unavailable. select a scan or reload to retry.</div>`; $("error").hidden = false; $("error").textContent = err.message || "could not load review"; }
+
+$("filters").addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  filter = b.dataset.filter;
+  for (const x of $("filters").querySelectorAll("button")) x.classList.toggle("on", x === b);
+  render();
+  $("main").scrollIntoView({ block: "start" });
+});
+
+$("main").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-act]");
+  if (!b) return;
+  const hunk = b.closest(".hunk");
+  if (!hunk) return;
+  decide(hunk.dataset.id, b.dataset.act).catch(showError);
+});
+
+$("scans").addEventListener("change", () => loadScan($("scans").value).catch(showError));
+
+(async () => {
+  const res = await fetch("/api/scans");
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "could not load scans");
+  scans = data.scans || [];
+  $("scans").innerHTML = scans.length
+    ? scans.map((s) => `<option value="${esc(s.id)}">${esc(s.id)}</option>`).join("")
+    : `<option>no scans</option>`;
+  if (data.latest) {
+    $("scans").value = data.latest;
+    await loadScan(data.latest);
+  } else {
+    $("main").innerHTML = `<div class="empty">no scans yet. run <code>npx github:amishaba/skrub</code>.</div>`;
+  }
+})().catch(showError);
+</script>
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>skrub</title>
+<meta name="description" content="clean code &amp; product sense for coding agents. on one 99-line pull request, skrub found 44 lines the agent didn't need: 13 safe to delete and 4 judgment calls, plus 3 places it rewrote code the repo already had." />
+<link rel="canonical" href="https://unvibe-eight.vercel.app/" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://unvibe-eight.vercel.app/" />
+<meta property="og:site_name" content="skrub" />
+<meta property="og:title" content="skrub - clean code &amp; product sense for coding agents" />
+<meta property="og:description" content="clean code &amp; product sense for coding agents. on one 99-line pull request, skrub found 44 lines the agent didn't need: 13 safe to delete and 4 judgment calls, plus 3 places it rewrote code the repo already had." />
+<meta property="og:image" content="https://unvibe-eight.vercel.app/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="skrub: 16 deletions, 44 of 99 lines, on one pull request" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="skrub - clean code &amp; product sense for coding agents" />
+<meta name="twitter:description" content="clean code &amp; product sense for coding agents. on one 99-line pull request, skrub found 44 lines the agent didn't need: 13 safe to delete and 4 judgment calls, plus 3 places it rewrote code the repo already had." />
+<meta name="twitter:image" content="https://unvibe-eight.vercel.app/og.png" />
+<!-- three bars, the middle one picked out: lines of code, one of them skrub's (web/favicon.svg) -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #000;
+    --ink: #e8e8e8;
+    --dim: rgba(255, 255, 255, 0.45);
+    --faint: rgba(255, 255, 255, 0.28);
+    --rule: rgba(255, 255, 255, 0.18);
+    --wash: rgba(255, 255, 255, 0.08);
+    --green: #3ddc84;
+    --serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font: 13px/1.6 var(--mono);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    border-left: 1px solid var(--rule);
+    border-right: 1px solid var(--rule);
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* masthead */
+  header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: baseline; gap: 22px; flex-wrap: wrap;
+    padding: 16px 28px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--rule);
+  }
+  .brand {
+    font-family: var(--serif); font-style: italic; font-size: 30px;
+    line-height: 1; letter-spacing: -0.01em; text-decoration: none;
+  }
+  .brand em { color: var(--dim); font-style: normal; }
+  nav.filters { display: flex; gap: 16px; flex-wrap: wrap; }
+  nav.filters button {
+    font: 12px/1 var(--mono); letter-spacing: 0.02em;
+    color: var(--dim); background: none; border: 0; padding: 4px 0; cursor: pointer;
+  }
+  nav.filters button:hover { color: var(--ink); }
+  nav.filters button.on { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+  .spacer { margin-left: auto; }
+  select#scans {
+    font: 12px var(--mono); color: var(--dim);
+    background: var(--bg); border: 1px solid var(--rule); border-radius: 0;
+    padding: 5px 8px;
+  }
+
+  main { padding: 0; }
+
+  /* kpi strip */
+  .kpis {
+    display: flex; gap: 40px; flex-wrap: wrap;
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--dim); font-variant-numeric: tabular-nums;
+  }
+  .kpis b { color: var(--ink); font-weight: 500; font-size: 15px; }
+  .kpis .lead { font-family: var(--serif); font-size: 22px; color: var(--ink); margin-right: auto; }
+
+  /* hunk rows */
+  .hunk {
+    display: grid; grid-template-columns: 200px 1fr 200px;
+    border-top: 1px solid var(--rule);
+  }
+  .hunk:first-child { border-top: 0; }
+  .col { min-width:0; padding: 26px 24px; }
+  .col.idx { border-right: 1px solid var(--rule); }
+  .col.side { border-left: 1px solid var(--rule); }
+  .n { display: block; font-family: var(--serif); font-size: 40px; line-height: 0.9; color: var(--faint); }
+  .file { display: block; margin-top: 12px; color: var(--dim); overflow-wrap: anywhere; }
+  .ln { color: var(--dim); }
+  .reason { margin: 0 0 14px; color: var(--ink); }
+  pre {
+    margin: 0; padding: 0 0 0 16px;
+    border-left: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 12px; line-height: 1.7;
+    color: var(--dim); overflow: auto; max-height: 15rem; white-space: pre;
+  }
+  .kind { color: var(--dim); text-transform: lowercase; letter-spacing: 0.02em; white-space: nowrap; }
+  .kind .safe { color: var(--ink); }
+  .choice { display: flex; gap: 8px; margin-top: 16px; }
+  .choice button {
+    font: 12px var(--mono); color: var(--dim);
+    background: none; border: 1px solid var(--rule); border-radius: 0;
+    padding: 5px 10px; cursor: pointer;
+  }
+  .choice button:hover { color: var(--ink); background: var(--wash); }
+  .choice button.on { color: var(--ink); background: var(--wash); border-color: var(--ink); }
+
+  .empty { padding: 80px 28px; color: var(--dim); font-family: var(--serif); font-size: 24px; }
+
+  footer {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap;
+    padding: 26px 28px 40px; margin-top: 40px;
+    border-top: 1px solid var(--rule);
+    color: var(--dim); font-size: 11px;
+  }
+  footer .fin { font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--ink); }
+  footer code { color: var(--green); }
+
+  @media (max-width: 720px) {
+    .hunk { grid-template-columns: 1fr; }
+    .col.idx, .col.side { border-right: 0; border-left: 0; }
+    .col.idx { border-bottom: 1px solid var(--rule); display: flex; align-items: baseline; gap: 14px; }
+    .n { font-size: 26px; }
+    .file { margin-top: 0; }
+  }
+</style>
+
+<style>
+  .hero { border-bottom: 1px solid var(--rule); }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); border-bottom: 1px solid var(--rule); }
+  .hero-grid > div { padding: 40px 28px 36px; min-width: 0; }
+  .hero-title { display: flex; flex-direction: column; justify-content: space-between; gap: 40px; }
+  .hero-tag { font: 11px var(--mono); letter-spacing: 0.06em; color: var(--dim); }
+  .hero-h { font-family: var(--serif); font-weight: 400; font-size: clamp(44px, 5.4vw, 68px); line-height: 0.92; letter-spacing: -0.035em; margin: 0; }
+  .hero-h em { color: var(--dim); font-style: normal; }
+  .hero-tagline { font: 13px/1.6 var(--mono); color: var(--dim); margin: 18px 0 0; }
+  .hero-copy { border-left: 1px solid var(--rule); display: flex; flex-direction: column; justify-content: flex-end; gap: 18px; }
+  .hero-stat { font-family: var(--serif); font-size: clamp(48px, 6vw, 72px); line-height: 0.9; letter-spacing: -0.02em; }
+  .hero-stat span { color: var(--dim); font-style: italic; }
+  .hero-sub { font: 14px/1.65 var(--mono); color: var(--dim); margin: 0; max-width: 48ch; }
+  .hero-sub b { color: var(--ink); font-weight: 500; }
+  .hero-sub a { color: var(--dim); }
+  .hero-sub a:hover { color: var(--ink); background: var(--wash); }
+  .hero-links { font: 13px var(--mono); margin: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  .hero-links a { color: var(--dim); text-decoration: none; }
+  .hero-links a:hover { color: var(--ink); background: var(--wash); }
+  .hero-links code { color: var(--green); }
+  .hero-walk { padding: 0 28px; }
+  .walk-sec { border-bottom: 1px solid var(--rule); }
+  .sec { border-bottom: 1px solid var(--rule); }
+  .sec-h { display: flex; align-items: baseline; gap: 14px; padding: 26px 28px 22px; border-bottom: 1px solid var(--rule); margin: 0; font-weight: 400; }
+  .sec-h .ix { font: 11px var(--mono); color: var(--dim); letter-spacing: 0.06em; }
+  .sec-h .w { font-family: var(--serif); font-size: 34px; line-height: 0.95; letter-spacing: -0.01em; }
+  .sec-h .note { margin-left: auto; font: 11px var(--mono); color: var(--dim); }
+  .sec-h .note a { color: var(--dim); }
+  .sec p { margin: 0; color: var(--dim); font-size: 14px; line-height: 1.65; }
+  .sec p b { color: var(--ink); font-weight: 500; }
+  .sec code { color: var(--green); }
+  .beliefs .bp { border-left: 1px solid var(--rule); align-self: stretch; }
+  .beliefs .bp p { margin: 0 0 10px; }
+  .beliefs .bp p:last-child { margin-bottom: 0; }
+  .facts { margin: 0 0 10px; padding: 0; list-style: none; }
+  .facts li { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 14px; padding: 6px 0; border-top: 1px solid var(--rule); font-size: 13px; line-height: 1.55; }
+  .facts li:last-child { border-bottom: 1px solid var(--rule); }
+  .facts .fk { font: 16px var(--serif); color: var(--ink); }
+  .setup { margin: 0; padding: 18px 28px; border-top: 1px solid var(--rule); color: var(--dim); font-size: 13px; line-height: 1.6; }
+  .beliefs { margin: 0; padding: 0; list-style: none; }
+  .beliefs > li { display: grid; grid-template-columns: 90px minmax(0, 0.8fr) minmax(0, 1.4fr); border-top: 1px solid var(--rule); }
+  .beliefs > li:first-child { border-top: 0; }
+  .beliefs > li > * { padding: 18px 28px; min-width: 0; }
+  .beliefs .bi { font: 11px var(--mono); color: var(--dim); padding-top: 22px; }
+  .beliefs .bw { font-family: var(--serif); font-size: 24px; line-height: 1.05; border-left: 1px solid var(--rule); }
+  .beliefs > li > p { border-left: 1px solid var(--rule); align-self: stretch; }
+  @media (max-width: 720px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-h { font-size: clamp(64px, 10vw, 124px); line-height: 0.86; }
+    .hero-grid > div { padding: 30px 18px; }
+    .hero-copy { border-left: 0; border-top: 1px solid var(--rule); }
+    .hero-walk { padding: 0 16px; }
+    .sec-h { flex-wrap: wrap; padding: 22px 18px 18px; }
+    .sec-h .note { margin-left: 0; width: 100%; }
+    .beliefs > li { grid-template-columns: 1fr; }
+    .beliefs > li > * { padding: 0 18px; border-left: 0 !important; }
+    .beliefs .bi { padding-top: 18px; }
+    .beliefs > li > p, .beliefs .bp { padding-bottom: 18px; padding-top: 8px; }
+    .facts li { grid-template-columns: 1fr; gap: 2px; }
+    .setup { padding: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="brand" href="https://github.com/amishaba/skrub">skrub<em>.</em></a>
+</header>
+
+<section class="hero">
+  <div class="sea" id="sea" role="img" aria-label="an ascii shark swimming through the sample pull request's code, eating it as it goes"><pre id="sea-pre" aria-hidden="true"></pre><span class="sea-count" aria-hidden="true"><b id="sea-count">0</b> chars eaten</span></div>
+<style>
+.sea {position:relative;overflow:hidden;border-bottom:1px solid var(--rule);padding:22px 0;}
+.sea pre {margin:0;padding:0;border:0;max-height:none;overflow:hidden;white-space:pre;color:rgba(255,255,255,.15);font-family:var(--mono);font-size:9px;line-height:10.8px;user-select:none;}
+.sea-b{color:#3f8fd6}.sea-l{color:#74b8ef}.sea-d{color:#294c9c}.sea-g{color:#c2cace}.sea-w{color:#eef3f6}.sea-r{color:#d6483f}.sea-e{color:#ffffff}.sea-c{color:#37c7d4}.sea-o{color:#f2914e}.sea-m{color:#ec6aa6}
+.sea-d {color:#3a66c8;}
+.sea-new {color:var(--green);opacity:.6;}
+.sea-count {position:absolute;right:12px;bottom:6px;padding:2px 6px;background:var(--bg);color:var(--dim);font-size:10px;}
+.sea-count b {color:var(--ink);font-weight:400;font-variant-numeric:tabular-nums;}
+</style>
+<script>
+(() => {
+  const FRAMES = {"aOpen":["............kkddkk.............","...........kkdoodkk............","kkkk......kkddddddkkkkk........","kddkk...kkklllllllllllkkk......","kdddkk.kklllllllllllllllkkk....","kkdddkkklllllllllllllleeelkk...",".kkddddlllllllclclclllepellkk..","..kkddbbbbbbbbcbcbcbbbbbbbbbk..","..kkddbbbbbbbbcbcbcbbbbbbbbbk..",".kkddddbbbbbbbbbbbbbrwrwrwbkk..","kkdddkkkgggggggggggwrwrwrkkk...","kdddkk.kkkgggggggggmmmmkkk.....","kddkk....kkkgggggggggkkk.......","kkkk.......kdddddkkkkk........."],"aBlink":["............kkddkk.............","...........kkdoodkk............","kkkk......kkddddddkkkkk........","kddkk...kkklllllllllllkkk......","kdddkk.kklllllllllllllllkkk....","kkdddkkkllllllllllllllllllkk...",".kkddddlllllllclclclllkkkllkk..","..kkddbbbbbbbbcbcbcbbbbbbbbbk..","..kkddbbbbbbbbcbcbcbbbbbbbbbk..",".kkddddbbbbbbbbbbbbbrwrwrwbkk..","kkdddkkkgggggggggggwrwrwrkkk...","kdddkk.kkkgggggggggmmmmkkk.....","kddkk....kkkgggggggggkkk.......","kkkk.......kdddddkkkkk........."],"bOpen":["............kkddkk.............","...........kkdoodkk............","..........kkddddddkkkkk........","kkkk....kkklllllllllllkkk......","kddkk..kklllllllllllllllkkk....","kdddkkkklllllllllllllleeelkk...","kkkddddlllllllclclclllepellkk..","..kkddbbbbbbbbcbcbcbbbbbbbbbk..","..kkddbbbbbbbbcbcbcbbbbbbbbbk..",".kkddddbbbbbbbbbbbbbrwrwrwbkk..","kkddddkkgggggggggggwrwrwrkkk...","kddddkkkkkgggggggggmmmmkkk.....","kdddkk...kkkgggggggggkkk.......","kkkkk......kdddddkkkkk........."],"bBlink":["............kkddkk.............","...........kkdoodkk............","..........kkddddddkkkkk........","kkkk....kkklllllllllllkkk......","kddkk..kklllllllllllllllkkk....","kdddkkkkllllllllllllllllllkk...","kkkddddlllllllclclclllkkkllkk..","..kkddbbbbbbbbcbcbcbbbbbbbbbk..","..kkddbbbbbbbbcbcbcbbbbbbbbbk..",".kkddddbbbbbbbbbbbbbrwrwrwbkk..","kkddddkkgggggggggggwrwrwrkkk...","kddddkkkkkgggggggggmmmmkkk.....","kdddkk...kkkgggggggggkkk.......","kkkkk......kdddddkkkkk........."]};
+  const CODE = "import { type Report, loadRows, sortBy } from \"./report.ts\"; import { toCsv } from \"./export/index.ts\"; import csvName from \"./export/csvName.ts\"; // Write the CSV file next to the report. if (flag === \"--csv\") { await writeFile(csvName(report), toCsv(report)); } // Export the latest copy from the reports service. if (flag === \"--csv-latest\") { const res = await fetch(`https://reports.example.com/api/reports/${sortField}`); const latest = (await res.json()) as Report; await writeFile(csvName(latest), toCsv(latest)); } import { type Report, type Row, loadRows } from \"../report.ts\"; import { formatDate } from \"../lib/format.ts\"; // Convert the report rows into CSV text. export function toCsv(report: Report): string { const head = report.columns.map(escapeCell); const body = getRows(report).map(formatRow); const totals = sumColumns(report); const foot = report.columns.map((column) => String(totals[column] ?? \"\")); return [head.join(\",\"), ...body, foot.join(\",\")].join(\"\\n\"); } function sumColumns(report: Report): Record<string, number> { const sums: Record<string, number> = {}; for (const column of report.columns) { sums[column] = report.rows.reduce((total, row) => { const value = row.values[column]; return typeof value === \"number\" ? total + Math.round(value) : total; }, 0); } return sums; } function getRows(report: Report): Row[] { return loadRows(report); } // Escape a cell. function escapeCell(value: string): string { if (!/[\",\\n]/.test(value)) return value; return `\"${value.replace(/\"/g, '\"\"')}\"`; } export function formatRow(row: Row): string { return row.cells.map((cell) => escapeCell(String(cell ?? \"\"))).join(\",\"); } export function sortRows(rows: Row[], key: string): Row[] { return [...rows].sort((a, b) => { const x = String(a.values[key] ?? \"\"); const y = String(b.values[key] ?? \"\"); return x.localeCompare(y); }); } export function formatRowLegacy(row: Row): string { const out: string[] = []; for (const cell of row.cells) { out.push(cell === null ? \"\" : String(cell)); } return out.join(\";\"); } export const CSV_VERSION = 1; import type { Report } from \"../report.ts\"; import { slugify } from \"../lib/text.ts\"; export default function csvName(report: Report): string { return `${slugify(report.title)}.csv`; } // First pass at exporting. Replaced by csv.ts. import type { Report } from \"../report.ts\"; export function exportReport(report: Report, format: \"csv\" | \"json\"): string { return format === \"csv\" ? report.rows.map((row) => row.cells.join(\",\")).join(\"\\n\") : JSON.stringify(report.rows); } export * from \"./csv.ts\"; import type { Report } from \"../report.ts\"; export function toJson(report: Report): string { const rows = report.rows.map((row) => row.cells); return JSON.stringify({ title: report.title, columns: report.columns, rows }, null, 2); } // helper export function helper(value: number): string { return value.toFixed(2); } import { sortRows } from \"./export/csv.ts\"; // TODO: implement csv export export const data = { exportEnabled: true };";
+  const GLYPHS = { l: "%&$#", b: "#@$%&", g: ":=+-", d: "#%&", o: "**", e: "@@", c: "//", r: "##", w: "vw", m: "~~" };
+  const ROWS = 20, SH = FRAMES.aOpen.length, SW = FRAMES.aOpen[0].length * 2, TICK = 55;
+  const sea = document.getElementById("sea"), pre = document.getElementById("sea-pre"), count = document.getElementById("sea-count");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+  let cols = 0, regrow = new Float64Array(0), x = 0, tick = 0, clock = 0, last = null, visible = true, eaten = 0;
+
+  function frameOf(t) {
+    const blink = t % 28 >= 26, a = Math.floor(t / 3) % 2 === 0;
+    return FRAMES[(a ? "a" : "b") + (blink ? "Blink" : "Open")];
+  }
+  function glyph(k, c, r) {
+    const set = GLYPHS[k];
+    return set[((c * 7 + r * 13 + (tick >> 2) * 5) >>> 0) % set.length];
+  }
+  function shark() {
+    const top = Math.round((ROWS - SH) / 2 + Math.sin(tick / 9));
+    return { grid: frameOf(tick), top, left: x };
+  }
+  function size() {
+    const w = sea.clientWidth;
+    const fs = Math.max(5, Math.min(9, (w * 0.62) / (SW * 0.6)));
+    pre.style.fontSize = fs + "px";
+    pre.style.lineHeight = fs * 1.2 + "px";
+    pre.style.height = ROWS * fs * 1.2 + "px";
+    cols = Math.floor(w / (fs * 0.6));
+    regrow = new Float64Array(cols * ROWS);
+    eaten = 0;
+    if (reduce.matches) still();
+  }
+  function eat(s) {
+    for (let r = 0; r < SH; r++) {
+      const row = s.grid[r], y = s.top + r;
+      if (y < 0 || y >= ROWS) continue;
+      for (let p = 0; p < row.length; p++) {
+        if (row[p] === ".") continue;
+        for (let h = 0; h < 2; h++) {
+          const c = s.left + p * 2 + h;
+          if (c < 0 || c >= cols) continue;
+          const i = y * cols + c;
+          if (regrow[i] <= clock) eaten++;
+          regrow[i] = clock + 4000 + Math.random() * 7000;
+        }
+      }
+    }
+  }
+  function draw(s) {
+    let html = "";
+    for (let r = 0; r < ROWS; r++) {
+      let run = "", cls = "", line = "";
+      const flush = () => { if (run) line += cls ? '<span class="sea-' + cls + '">' + run + "</span>" : run; run = ""; };
+      for (let c = 0; c < cols; c++) {
+        let k = "", ch;
+        const sy = r - s.top, sx = c - s.left;
+        const px = sy >= 0 && sy < SH && sx >= 0 && sx < SW ? s.grid[sy][sx >> 1] : ".";
+        if (px === "k" || px === "p") ch = " ";
+        else if (px !== ".") { k = px; ch = glyph(px, c, r); }
+        else {
+          const due = regrow[r * cols + c];
+          if (due > clock) ch = " ";
+          else {
+            ch = CODE[(r * cols + c) % CODE.length];
+            if (due && clock - due < 700) k = "new";
+          }
+        }
+        if (k !== cls) { flush(); cls = k; }
+        run += ch === "<" ? "&lt;" : ch === "&" ? "&amp;" : ch;
+      }
+      flush();
+      html += line + "\n";
+    }
+    pre.innerHTML = html;
+    count.textContent = eaten.toLocaleString("en-US");
+  }
+  function step() {
+    tick++;
+    clock += TICK;
+    x++;
+    if (x > cols + 24) x = -SW - 10;
+    const s = shark();
+    eat(s);
+    draw(s);
+  }
+  function still() {
+    x = Math.round(cols * 0.56);
+    const s = shark();
+    for (let at = -SW; at <= x; at++) eat({ ...s, left: at });
+    clock = 0;
+    draw(s);
+  }
+  function loop(now) {
+    if (!reduce.matches && visible && !document.hidden) {
+      if (last === null) last = now;
+      while (now - last >= TICK) { step(); last += TICK; }
+    } else last = null;
+    requestAnimationFrame(loop);
+  }
+  if ("IntersectionObserver" in window) new IntersectionObserver((e) => { visible = e[0].isIntersecting; }).observe(sea);
+  addEventListener("resize", size);
+  reduce.addEventListener("change", size);
+  if (document.fonts) document.fonts.ready.then(size);
+  size();
+  if (!reduce.matches) { x = Math.round(cols * 0.08); draw(shark()); }
+  requestAnimationFrame(loop);
+})();
+</script>
+  <div class="hero-grid">
+    <div class="hero-title">
+      <div class="hero-tag">skrub</div>
+      <div>
+        <h1 class="hero-h">clean code &amp; product sense for coding agents<em>.</em></h1>
+        <p class="hero-tagline">skrub deletes the dead code your agent leaves behind, points it back at what the repo already has, and starts every session knowing what the product is and whose patterns to follow.</p>
+      </div>
+    </div>
+    <div class="hero-copy">
+      <div class="hero-stat">44<span> of 99 lines</span></div>
+      <p class="hero-sub">on <a href="https://github.com/amishaba/skrub-sample/pull/1">one real pull request</a>: 8 files, <b>99 added lines</b>. skrub found <b>44</b> of them the agent didn't need: 13 safe to delete and 4 judgment calls for you, plus <b>3</b> places it rewrote code the repo already had. <a href="sample">review them yourself</a>.</p>
+      <p class="hero-links"><a href="https://github.com/amishaba/skrub">[ github ]</a><a href="https://github.com/amishaba/skrub-sample/pull/1">[ the pr ]</a><a href="sample">[ try the review ]</a><code>npx github:amishaba/skrub</code></p>
+    </div>
+  </div>
+</section>
+<section class="sec">
+  <h2 class="sec-h"><span class="ix">01</span><span class="w">🤔 what i think about code</span></h2>
+  <ol class="beliefs">
+    <li><span class="bi">i</span><span class="bw">every line is context.</span><p>clean code can sound like a standard from old style books, but agents build on whatever is already there. if the base is strong, so is everything built on it: better code is better context for every agent that touches it next. (on clean code, the same agent used <a href="https://arxiv.org/html/2605.20049v1">7% fewer tokens and re-opened files 34% less</a>.)</p></li>
+    <li><span class="bi">ii</span><span class="bw">reduce, reuse, recycle.</span><p>it belongs in code too: reuse what's already there, add an abstraction only when it earns its place, and name things so they can be found again.</p></li>
+    <li><span class="bi">iii</span><span class="bw">less code isn't always better code.</span><p>deleting and reusing can go too far. ten screens sharing one api call looks tidy, until that call does heavy backend work and each screen throws most of it away. so skrub only deletes on its own what <a href="https://knip.dev">knip</a> finds unused, then runs the typecheck and puts back anything that broke. anything that needs judgment, like a duplicate or a wrapper that looks pointless, it hands to you.</p></li>
+    <li><span class="bi">iv</span><span class="bw">the repo's habits beat anyone's taste.</span><p>models keep changing and getting better. i can't write better code than a frontier model, but i can give it a baseline: the conventions this codebase already follows, read from the code itself.</p></li>
+    <li><span class="bi">v</span><span class="bw">if a tool can check it, it doesn't belong in a prompt.</span><p>a rule in a <code>CLAUDE.md</code> is a request, not a guarantee: across 481 of those files, <a href="https://marmelab.com/blog/2026/09/24/the-state-of-ai-harness-engineering-2026.html">only 4.4% of the security rules</a> had anything actually enforcing them. so skrub turns what it can into checks, and leaves the writing for judgment calls.</p></li>
+    <li><span class="bi">vi</span><span class="bw">build like a product engineer.</span><p>the best code is the change the user actually needed. before it builds, the agent works out the problem behind the ask, and copies what's conventional in its space: for a devtool, how sentry, braintrust or posthog do it. users already know those patterns, so they don't have to learn yours.</p></li>
+  </ol>
+</section>
+<section class="walk-sec">
+  <div class="hero-walk"><section class="pr" id="pr" aria-label="skrub's findings on the sample pull request, animated">
+  <div class="pr-head"><span class="lab" id="pr-label">what the agent wrote</span><span class="pr-count"><span id="pr-n">99</span><em> lines</em></span></div>
+  <div class="pr-code"><div class="pr-col"><div class="pr-file">src/cli.ts</div><div class="l"><span class="t">import { type Report, loadRows, sortBy } from &quot;./report.ts&quot;;</span></div><div class="l gap"><span class="t">⋯</span></div><div class="l"><span class="t">import { toCsv } from &quot;./export/index.ts&quot;;</span></div><div class="l"><span class="t">import csvName from &quot;./export/csvName.ts&quot;;</span></div><div class="l gap"><span class="t">⋯</span></div><div class="l" data-h="4" data-del="1"><span class="t">// Write the CSV file next to the report.</span><i class="tag">narrates</i></div><div class="l"><span class="t">if (flag === &quot;--csv&quot;) {</span></div><div class="l"><span class="t">  await writeFile(csvName(report), toCsv(report));</span></div><div class="l"><span class="t">}</span></div><div class="l"><span class="t"> </span></div><div class="l"><span class="t">// Export the latest copy from the reports service.</span></div><div class="l"><span class="t">if (flag === &quot;--csv-latest&quot;) {</span></div><div class="l" data-h="20"><span class="t">  const res = await fetch(`https://reports.example.com/api/reports/${sortField}`);</span><i class="tag">endpoint fetched elsewhere</i></div><div class="l"><span class="t">  const latest = (await res.json()) as Report;</span></div><div class="l"><span class="t">  await writeFile(csvName(latest), toCsv(latest));</span></div><div class="l"><span class="t">}</span></div><div class="l" data-gone><span class="t"> </span></div><div class="pr-file">src/export/csv.ts</div><div class="l"><span class="t">import { type Report, type Row, loadRows } from &quot;../report.ts&quot;;</span></div><div class="l" data-h="0" data-del="1"><span class="t">import { formatDate } from &quot;../lib/format.ts&quot;;</span><i class="tag">unused import</i></div><div class="l"><span class="t"> </span></div><div class="l" data-h="5" data-del="1"><span class="t">// Convert the report rows into CSV text.</span><i class="tag">narrates</i></div><div class="l"><span class="t">export function toCsv(report: Report): string {</span></div><div class="l"><span class="t">  const head = report.columns.map(escapeCell);</span></div><div class="l"><span class="t">  const body = getRows(report).map(formatRow);</span></div><div class="l"><span class="t">  const totals = sumColumns(report);</span></div><div class="l"><span class="t">  const foot = report.columns.map((column) =&gt; String(totals[column] ?? &quot;&quot;));</span></div></div><div class="pr-col"><div class="l"><span class="t">  return [head.join(&quot;,&quot;), ...body, foot.join(&quot;,&quot;)].join(&quot;\n&quot;);</span></div><div class="l"><span class="t">}</span></div><div class="l"><span class="t"> </span></div><div class="l" data-h="17"><span class="t">function sumColumns(report: Report): Record&lt;string, number&gt; {</span><i class="tag">like columnTotals</i></div><div class="l" data-h="17"><span class="t">  const sums: Record&lt;string, number&gt; = {};</span></div><div class="l" data-h="17"><span class="t">  for (const column of report.columns) {</span></div><div class="l" data-h="17"><span class="t">    sums[column] = report.rows.reduce((total, row) =&gt; {</span></div><div class="l" data-h="17"><span class="t">      const value = row.values[column];</span></div><div class="l" data-h="17"><span class="t">      return typeof value === &quot;number&quot; ? total + Math.round(value) : total;</span></div><div class="l" data-h="17"><span class="t">    }, 0);</span></div><div class="l" data-h="17"><span class="t">  }</span></div><div class="l" data-h="17"><span class="t">  return sums;</span></div><div class="l" data-h="17"><span class="t">}</span></div><div class="l"><span class="t"> </span></div><div class="l" data-h="15"><span class="t">function getRows(report: Report): Row[] {</span><i class="tag">pass-through</i></div><div class="l" data-h="15"><span class="t">  return loadRows(report);</span></div><div class="l" data-h="15"><span class="t">}</span></div><div class="l"><span class="t"> </span></div><div class="l" data-h="6" data-del="1"><span class="t">// Escape a cell.</span><i class="tag">narrates</i></div><div class="l"><span class="t">function escapeCell(value: string): string {</span></div><div class="l"><span class="t">  if (!/[&quot;,\n]/.test(value)) return value;</span></div><div class="l"><span class="t">  return `&quot;${value.replace(/&quot;/g, &#39;&quot;&quot;&#39;)}&quot;`;</span></div><div class="l"><span class="t">}</span></div><div class="l"><span class="t"> </span></div><div class="l" data-h="10" data-to="function formatRow(row: Row): string {"><span class="t">export function formatRow(row: Row): string {</span><i class="tag">export not needed</i></div><div class="l"><span class="t">  return row.cells.map((cell) =&gt; escapeCell(String(cell ?? &quot;&quot;))).join(&quot;,&quot;);</span></div><div class="l"><span class="t">}</span></div><div class="l"><span class="t"> </span></div></div><div class="pr-col"><div class="l" data-h="16"><span class="t">export function sortRows(rows: Row[], key: string): Row[] {</span><i class="tag">copy of sortBy</i></div><div class="l" data-h="16"><span class="t">  return [...rows].sort((a, b) =&gt; {</span></div><div class="l" data-h="16"><span class="t">    const x = String(a.values[key] ?? &quot;&quot;);</span></div><div class="l" data-h="16"><span class="t">    const y = String(b.values[key] ?? &quot;&quot;);</span></div><div class="l" data-h="16"><span class="t">    return x.localeCompare(y);</span></div><div class="l" data-h="16"><span class="t">  });</span></div><div class="l" data-h="16"><span class="t">}</span></div><div class="l" data-gone><span class="t"> </span></div><div class="l" data-h="8" data-del="1"><span class="t">export function formatRowLegacy(row: Row): string {</span><i class="tag">never used</i></div><div class="l" data-h="8" data-del="1"><span class="t">  const out: string[] = [];</span></div><div class="l" data-h="8" data-del="1"><span class="t">  for (const cell of row.cells) {</span></div><div class="l" data-h="8" data-del="1"><span class="t">    out.push(cell === null ? &quot;&quot; : String(cell));</span></div><div class="l" data-h="8" data-del="1"><span class="t">  }</span></div><div class="l" data-h="8" data-del="1"><span class="t">  return out.join(&quot;;&quot;);</span></div><div class="l" data-h="8" data-del="1"><span class="t">}</span></div><div class="l" data-gone><span class="t"> </span></div><div class="l" data-h="11" data-del="1"><span class="t">export const CSV_VERSION = 1;</span><i class="tag">never used</i></div><div class="pr-file">src/export/csvName.ts</div><div class="l" data-h="18"><span class="t">import type { Report } from &quot;../report.ts&quot;;</span><i class="tag">off-convention</i></div><div class="l" data-h="21"><span class="t">import { slugify } from &quot;../lib/text.ts&quot;;</span></div><div class="l" data-h="21"><span class="t"> </span></div><div class="l" data-h="19"><span class="t">export default function csvName(report: Report): string {</span><i class="tag">off-convention</i></div><div class="l" data-h="21"><span class="t">  return `${slugify(report.title)}.csv`;</span></div><div class="l" data-h="21"><span class="t">}</span></div><div class="pr-file" data-gone>src/export/draft-export.ts</div><div class="l" data-h="2" data-del="1"><span class="t">// First pass at exporting. Replaced by csv.ts.</span><i class="tag">never imported</i></div><div class="l" data-h="2" data-del="1"><span class="t">import type { Report } from &quot;../report.ts&quot;;</span></div><div class="l" data-h="2" data-del="1"><span class="t"> </span></div></div><div class="pr-col"><div class="l" data-h="2" data-del="1"><span class="t">export function exportReport(report: Report, format: &quot;csv&quot; | &quot;json&quot;): string {</span></div><div class="l" data-h="2" data-del="1"><span class="t">  return format === &quot;csv&quot;</span></div><div class="l" data-h="2" data-del="1"><span class="t">    ? report.rows.map((row) =&gt; row.cells.join(&quot;,&quot;)).join(&quot;\n&quot;)</span></div><div class="l" data-h="2" data-del="1"><span class="t">    : JSON.stringify(report.rows);</span></div><div class="l" data-h="2" data-del="1"><span class="t">}</span></div><div class="pr-file">src/export/index.ts</div><div class="l" data-h="14"><span class="t">export * from &quot;./csv.ts&quot;;</span><i class="tag">only re-exports</i></div><div class="pr-file" data-gone>src/export/json.ts</div><div class="l" data-h="3" data-del="1"><span class="t">import type { Report } from &quot;../report.ts&quot;;</span><i class="tag">never imported</i></div><div class="l" data-h="3" data-del="1"><span class="t"> </span></div><div class="l" data-h="3" data-del="1"><span class="t">export function toJson(report: Report): string {</span></div><div class="l" data-h="3" data-del="1"><span class="t">  const rows = report.rows.map((row) =&gt; row.cells);</span></div><div class="l" data-h="3" data-del="1"><span class="t">  return JSON.stringify({ title: report.title, columns: report.columns, rows }, null, 2);</span></div><div class="l" data-h="3" data-del="1"><span class="t">}</span></div><div class="pr-file" data-gone>src/lib/format.ts</div><div class="l" data-gone><span class="t"> </span></div><div class="l" data-h="7" data-del="1"><span class="t">// helper</span><i class="tag">restates the name</i></div><div class="l" data-h="9" data-del="1"><span class="t">export function helper(value: number): string {</span><i class="tag">never used</i></div><div class="l" data-h="9" data-del="1"><span class="t">  return value.toFixed(2);</span></div><div class="l" data-h="9" data-del="1"><span class="t">}</span></div><div class="pr-file">src/report.ts</div><div class="l" data-gone><span class="t"> </span></div><div class="l" data-h="1" data-del="1"><span class="t">import { sortRows } from &quot;./export/csv.ts&quot;;</span><i class="tag">unused import</i></div><div class="l" data-h="13"><span class="t">// TODO: implement csv export</span><i class="tag">stale todo</i></div><div class="l" data-h="12" data-del="1"><span class="t">export const data = { exportEnabled: true };</span><i class="tag">never used</i></div></div></div>
+  <div class="pr-foot"><span>real scan · nothing is changed</span><a href="sample">[ try the review → ]</a></div>
+</section>
+<style>
+.pr {--del:#f85149;border:1px solid var(--rule);margin:30px 0 26px;text-align:left;display:flex;flex-direction:column;}
+.pr-head {display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:16px 20px;border-bottom:1px solid var(--rule);}
+.pr-head .lab {font:11px var(--mono);color:var(--dim);}
+.pr-count {font-family:var(--serif);font-size:44px;line-height:.9;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+.pr-count em {font-size:.45em;color:var(--dim);font-style:normal;}
+.pr-code {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:16px 0;font:11.5px/1.7 var(--mono);flex:1 1 auto;min-height:0;}
+.pr-col {min-width:0;}
+.pr-col + .pr-col {border-left:1px solid var(--rule);}
+.pr-file {padding:10px 20px 2px;color:var(--dim);font-size:10px;max-height:4em;overflow:hidden;transition:max-height .7s ease,padding .7s ease,opacity .5s;}
+.pr-col > .pr-file:first-child {padding-top:0;}
+.pr .l {position:relative;display:flex;gap:10px;padding:0 20px;white-space:pre;color:rgba(255,255,255,.38);max-height:1.7em;overflow:hidden;transition:color .3s,opacity .7s,max-height .7s ease;}
+.pr .l .t {flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.pr .l .tag {flex:none;font:13px/1.3 var(--serif);color:var(--green);opacity:0;transition:opacity .3s;}
+.pr .l.on {color:var(--ink);}
+/* a diff's colours: what skrub removes is red, what it writes is green */
+.pr .l.on[data-del] {color:var(--del);}
+.pr .l.on[data-del]::before {background:var(--del);}
+.pr .l.on:not(.gone):not(.edited)::before {content:"";position:absolute;left:9px;top:3px;bottom:3px;width:1px;background:var(--ink);}
+.pr .l.on .tag {opacity:1;}
+.pr .l.edited .tag {opacity:0;}
+.pr .l.gone {opacity:.4;}
+.pr .l.gap {color:rgba(255,255,255,.2);}
+.pr.done .l:not([data-del]) {color:var(--ink);}
+.pr.done .l.edited {color:var(--green);}
+/* then what fix deleted is gone for real: those lines close up and the code that's left comes together */
+.pr.shut .l[data-del], .pr.shut .l[data-gone] {max-height:0;opacity:0;}
+.pr.shut .pr-file[data-gone] {max-height:0;padding-top:0;padding-bottom:0;opacity:0;}
+/* a desktop sees the whole pr at once: the box fills the screen under the header, the code sized to fit */
+@media (min-width: 900px) and (min-height: 560px) {
+  .pr {height:calc(100vh - 63px - 56px);margin:28px 0;}
+  .pr-code {font-size:clamp(9.5px, calc((100vh - 270px) / 52), 12.5px);overflow:hidden;}
+}
+.pr-foot {display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 20px;border-top:1px solid var(--rule);font-size:10px;color:var(--dim);}
+.pr-foot a {color:var(--dim);}
+.pr-foot a:hover {color:var(--ink);background:var(--wash);}
+@media(max-width:720px){.pr-code{grid-template-columns:1fr}.pr-col + .pr-col{border-left:0}.pr-count{font-size:34px}.pr .l,.pr-file{padding-left:16px;padding-right:16px}.pr .l.on::before{left:6px}}
+</style>
+<script>
+(() => {
+  const TOTAL = 99, LEFT = 67, AFTER = "after fix · 4 calls left for you";
+  const root = document.getElementById('pr');
+  const lines = [...root.querySelectorAll('.l[data-h]')];
+  const order = [...new Set(lines.map(l => l.dataset.h))].sort((a, b) => a - b);
+  const n = document.getElementById('pr-n'), label = document.getElementById('pr-label');
+  let timers = [];
+  const at = (ms, f) => timers.push(setTimeout(f, ms));
+  const mark = (pick, cls) => lines.filter(pick).forEach(l => l.classList.add(cls));
+  // a safe edit (an export nothing else needs) shows its new line once fix has run
+  const edits = lines.filter(l => l.dataset.to != null).map(l => ({ l, t: l.querySelector('.t'), from: l.querySelector('.t').textContent }));
+  const applyEdits = on => edits.forEach(e => { e.t.textContent = on ? e.l.dataset.to : e.from; on ? e.l.classList.add('edited') : e.l.classList.remove('edited'); });
+  function reset() {
+    timers.forEach(clearTimeout); timers = [];
+    root.classList.remove('done'); root.classList.remove('shut');
+    lines.forEach(l => { l.classList.remove('on'); l.classList.remove('gone'); });
+    applyEdits(false);
+    n.textContent = String(TOTAL); label.textContent = 'what the agent wrote';
+  }
+  function settle() {
+    mark(() => true, 'on'); mark(l => l.dataset.del, 'gone'); applyEdits(true); root.classList.add('done'); root.classList.add('shut');
+    n.textContent = String(LEFT); label.textContent = AFTER;
+  }
+  // findings light up in rank order, then the deletions fade and the count falls;
+  // it holds the result, then starts over, for as long as it's on screen
+  function play() {
+    reset();
+    order.forEach((h, i) => at(250 + i * 120, () => mark(l => l.dataset.h === h, 'on')));
+    const fade = 250 + order.length * 120 + 350;
+    at(fade, () => { mark(l => l.dataset.del, 'gone'); applyEdits(true); root.classList.add('done'); label.textContent = AFTER; });
+    const steps = 14;
+    for (let s = 1; s <= steps; s++) at(fade + s * 50, () => { n.textContent = String(Math.round(TOTAL - (TOTAL - LEFT) * (s / steps))); });
+    // a beat to read what faded, then it closes up
+    at(fade + SHUT, () => root.classList.add('shut'));
+    at(fade + SHUT + HOLD, play);
+  }
+  const HOLD = 3200, SHUT = 1100;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { settle(); return; }
+  new IntersectionObserver(entries => {
+    const visible = entries.some(e => e.isIntersecting);
+    if (visible && timers.length === 0) play();
+    if (!visible) reset();
+  }, { threshold: 0.35 }).observe(root);
+})();
+</script></div>
+</section>
+<section class="sec">
+  <h2 class="sec-h"><span class="ix">02</span><span class="w">in the agent's loop</span><span class="note"><code>npx github:amishaba/skrub init</code></span></h2>
+  <ol class="beliefs">
+    <li><span class="bi">start</span><span class="bw">it knows the product.</span><div class="bp"><p>every session starts with what the product is, who uses it, and whose patterns to follow. on its first session in <a href="https://github.com/amishaba/agentdiff">agentdiff</a>, the agent wrote:</p><ul class="facts"><li><span class="fk">who uses it</span><span>ai engineers checking whether a prompt, tool or model change altered what their agent does, before it merges</span></li><li><span class="fk">model on</span><span>braintrust, langsmith, promptfoo</span></li></ul></div></li>
+    <li><span class="bi">write</span><span class="bw">it reuses what's there.</span><div class="bp"><p>before the agent adds <code>csv.ts</code>, skrub points it at what the repo already has:</p><ul class="facts"><li><span class="fk">sumColumns</span><span>85% the same as columnTotals</span></li><li><span class="fk">sortRows</span><span>100% the same as sortBy</span></li></ul><p>in this demo the agent writes the file anyway, so the rest of the story has something to clean up.</p></div></li>
+    <li><span class="bi">done?</span><span class="bw">skrub checks the change.</span><div class="bp"><p>the agent wrote 99 lines across 8 files. skrub finds <b>44</b> it didn't need: an import nothing uses, a file nothing imports, a comment that only repeats the code, and more. it says so once, in at most ten lines.</p></div></li>
+    <li><span class="bi">fix</span><span class="bw">the safe ones go.</span><div class="bp"><p><code>skrub fix</code> deletes the 13 nothing uses, runs the typecheck, and puts back anything that broke.</p></div></li>
+    <li><span class="bi">you</span><span class="bw">the rest are your call.</span><div class="bp"><p>4 judgment calls, like a wrapper or a copy of a helper, wait for you: delete them, or keep one with a reason. skrub never asks twice, and a clean change never stops at all.</p></div></li>
+  </ol>
+  <p class="setup"><code>init</code> sets up the product and conventions in <code>.claude/conventions.md</code>, three hooks (session start, before a new file, before the agent stops), and a skill with a product engineer's guide.</p>
+</section>
+<section class="sec">
+  <h2 class="sec-h"><span class="ix">03</span><span class="w">does it help?</span><span class="note">8 real repos and live claude code runs · oct 2026</span></h2>
+  <ol class="beliefs">
+    <li><span class="bi">fix</span><span class="bw">8 of 8 real repos stayed green.</span><p>every safe finding applied at once, then typecheck, tests and build still pass. the version before knip broke 4 of them.</p></li>
+    <li><span class="bi">fix</span><span class="bw">33 edits on agentdiff, nothing broke.</span><p>dead code and exports nothing else needed, from one <code>fix</code>. typecheck, tests, build and lint all still pass.</p></li>
+    <li><span class="bi">claude code</span><span class="bw">1 new file instead of 2.</span><p>the same csv task, with and without skrub. with it, the agent read the product guide, ran <code>fix</code>, and said no to a flag that would have done nothing.</p></li>
+    <li><span class="bi">claude code</span><span class="bw">no copies.</span><p>told to put its summing logic in a new file, the agent reused <code>columnTotals</code> instead, and said why.</p></li>
+    <li><span class="bi">first run</span><span class="bw">3 products to model on.</span><p>on its first session in agentdiff, the agent picked braintrust, langsmith and promptfoo. you approve the edit, so you can correct it.</p></li>
+  </ol>
+</section>
+<footer>
+  <span class="fin">fin</span>
+  <span>made by amisha</span>
+  <span>a demo of <a href="https://github.com/amishaba/skrub">skrub</a></span>
+</footer>
+</div>
+</body>
+</html>

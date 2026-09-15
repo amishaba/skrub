@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>skrub</title>
+<!-- three bars, the middle one picked out: lines of code, one of them skrub's (web/favicon.svg) -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #000;
+    --ink: #e8e8e8;
+    --dim: rgba(255, 255, 255, 0.45);
+    --faint: rgba(255, 255, 255, 0.28);
+    --rule: rgba(255, 255, 255, 0.18);
+    --wash: rgba(255, 255, 255, 0.08);
+    --green: #3ddc84;
+    --serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font: 13px/1.6 var(--mono);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    border-left: 1px solid var(--rule);
+    border-right: 1px solid var(--rule);
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* masthead */
+  header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: baseline; gap: 22px; flex-wrap: wrap;
+    padding: 16px 28px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--rule);
+  }
+  .brand {
+    font-family: var(--serif); font-style: italic; font-size: 30px;
+    line-height: 1; letter-spacing: -0.01em; text-decoration: none;
+  }
+  .brand em { color: var(--dim); font-style: normal; }
+  nav.filters { display: flex; gap: 16px; flex-wrap: wrap; }
+  nav.filters button {
+    font: 12px/1 var(--mono); letter-spacing: 0.02em;
+    color: var(--dim); background: none; border: 0; padding: 4px 0; cursor: pointer;
+  }
+  nav.filters button:hover { color: var(--ink); }
+  nav.filters button.on { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+  .spacer { margin-left: auto; }
+  select#scans {
+    font: 12px var(--mono); color: var(--dim);
+    background: var(--bg); border: 1px solid var(--rule); border-radius: 0;
+    padding: 5px 8px;
+  }
+
+  main { padding: 0; }
+
+  /* kpi strip */
+  .kpis {
+    display: flex; gap: 40px; flex-wrap: wrap;
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--dim); font-variant-numeric: tabular-nums;
+  }
+  .kpis b { color: var(--ink); font-weight: 500; font-size: 15px; }
+  .kpis .lead { font-family: var(--serif); font-size: 22px; color: var(--ink); margin-right: auto; }
+
+  /* hunk rows */
+  .hunk {
+    display: grid; grid-template-columns: 200px 1fr 200px;
+    border-top: 1px solid var(--rule);
+  }
+  .hunk:first-child { border-top: 0; }
+  .col { min-width:0; padding: 26px 24px; }
+  .col.idx { border-right: 1px solid var(--rule); }
+  .col.side { border-left: 1px solid var(--rule); }
+  .n { display: block; font-family: var(--serif); font-size: 40px; line-height: 0.9; color: var(--faint); }
+  .file { display: block; margin-top: 12px; color: var(--dim); overflow-wrap: anywhere; }
+  .ln { color: var(--dim); }
+  .reason { margin: 0 0 14px; color: var(--ink); }
+  pre {
+    margin: 0; padding: 0 0 0 16px;
+    border-left: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 12px; line-height: 1.7;
+    color: var(--dim); overflow: auto; max-height: 15rem; white-space: pre;
+  }
+  .kind { color: var(--dim); text-transform: lowercase; letter-spacing: 0.02em; white-space: nowrap; }
+  .kind .safe { color: var(--ink); }
+  .choice { display: flex; gap: 8px; margin-top: 16px; }
+  .choice button {
+    font: 12px var(--mono); color: var(--dim);
+    background: none; border: 1px solid var(--rule); border-radius: 0;
+    padding: 5px 10px; cursor: pointer;
+  }
+  .choice button:hover { color: var(--ink); background: var(--wash); }
+  .choice button.on { color: var(--ink); background: var(--wash); border-color: var(--ink); }
+
+  .empty { padding: 80px 28px; color: var(--dim); font-family: var(--serif); font-size: 24px; }
+
+  footer {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap;
+    padding: 26px 28px 40px; margin-top: 40px;
+    border-top: 1px solid var(--rule);
+    color: var(--dim); font-size: 11px;
+  }
+  footer .fin { font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--ink); }
+  footer code { color: var(--green); }
+
+  @media (max-width: 720px) {
+    .hunk { grid-template-columns: 1fr; }
+    .col.idx, .col.side { border-right: 0; border-left: 0; }
+    .col.idx { border-bottom: 1px solid var(--rule); display: flex; align-items: baseline; gap: 14px; }
+    .n { font-size: 26px; }
+    .file { margin-top: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="brand" href="#">skrub<em>.</em></a>
+  <nav class="filters" id="filters">
+    <button type="button" data-filter="all" class="on">all</button>
+    <button type="button" data-filter="safe">safe</button>
+    <button type="button" data-filter="glue">glue</button>
+    <button type="button" data-filter="comments">comments</button>
+    <button type="button" data-filter="reuse">reuse</button>
+    <button type="button" data-filter="quality">quality</button>
+  </nav>
+  <span class="spacer"></span>
+  <select id="scans" aria-label="scan"></select>
+</header>
+<p id="error" role="alert" hidden style="padding:16px 28px"></p>
+<main id="main"><div class="empty">loading…</div></main>
+<footer>
+  <span class="fin">fin</span>
+  <span id="foot">localhost only</span>
+  <span>made by amisha</span>
+  <span>apply with <code>__SKRUB__ apply</code></span>
+</footer>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+let scans = [];
+let currentId = "";
+let hunks = [];
+let decisions = {};
+let filter = "all";
+
+function matchesFilter(h) {
+  if (filter === "all") return true;
+  if (filter === "safe") return h.safe;
+  if (filter === "glue") return h.kind === "glue";
+  if (filter === "comments") return h.kind === "claudeism";
+  if (filter === "reuse") return h.kind === "dup" || h.kind === "reuse" || h.kind === "fold";
+  if (filter === "quality") return h.kind === "naming" || h.kind === "pattern";
+  return true;
+}
+
+function lines(h) { return h.endLine - h.startLine + 1; }
+
+function render() {
+  const shown = hunks.filter(matchesFilter);
+  const accepted = hunks.filter((h) => h.action !== "comment" && decisions[h.id] === "accept");
+  const lineN = shown.filter(h => h.action !== "comment" && h.replacement == null).reduce((n, h) => n + lines(h), 0);
+  $("foot").textContent = currentId || "localhost only";
+
+  if (!hunks.length) {
+    $("main").innerHTML = `<div class="empty">no hunks in this scan. run <code>__SKRUB__</code>.</div>`;
+    return;
+  }
+
+  $("main").innerHTML = `
+    <div class="kpis">
+      <span class="lead">the extra stuff.</span>
+      <span><b>${shown.length}</b> hunks</span>
+      <span><b>${lineN}</b> suggested deletion lines</span>
+      <span><b>${accepted.length}</b> to delete</span>
+    </div>
+    ${shown.map((h, i) => {
+      const d = decisions[h.id];
+      const idx = String(i + 1).padStart(2, "0");
+      return `<article class="hunk" data-id="${esc(h.id)}">
+        <div class="col idx">
+          <span class="n">${idx}</span>
+          <span class="file">${esc(h.file).replace(/\//g, "/<wbr>")}<span class="ln">:${h.startLine}</span></span>
+        </div>
+        <div class="col main">
+          <p class="reason">${esc(h.reason)}</p>
+          ${h.replacement != null
+            ? `<details><summary>view change · 1 line</summary><pre>${esc("- " + h.text.replace(/\n$/, ""))}\n${esc("+ " + h.replacement.replace(/\n$/, ""))}</pre></details>`
+            : `<details><summary>view code · ${lines(h)} ${lines(h) === 1 ? "line" : "lines"}</summary><pre>${esc(h.text)}</pre></details>`}
+        </div>
+        <div class="col side">
+          <div class="kind">${esc(h.kind)}${h.safe ? ' <span class="safe">· safe</span>' : ""}</div>
+          <div class="choice">
+            <button type="button" data-act="skip" aria-pressed="${d === "skip"}" class="${d === "skip" ? "on" : ""}">keep</button>
+            ${h.action !== "comment" ? `<button type="button" data-act="accept" aria-pressed="${d === "accept"}" class="${d === "accept" ? "on" : ""}">${h.replacement != null ? "apply" : "delete"}</button>` : `<span>naming note · no deletion</span>`}
+          </div>
+        </div>
+      </article>`;
+    }).join("")}
+  `;
+}
+
+async function loadScan(id) {
+  const requestedId = id;
+  currentId = id;
+  hunks = [];
+  decisions = {};
+  $("error").hidden = true;
+  $("main").innerHTML = `<div class="empty">loading…</div>`;
+  const res = await fetch("/api/scan?id=" + encodeURIComponent(id));
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "could not load scan");
+  if (currentId !== requestedId) return;
+  hunks = data.hunks || [];
+  decisions = data.decisions || {};
+  render();
+}
+
+async function decide(hunkId, decision) {
+  $("error").hidden = true;
+  const scanId = currentId;
+  const res = await fetch("/api/decision", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ id: scanId, hunkId, decision }),
+  });
+  if (!res.ok) throw new Error("could not save choice; please try again");
+  if (currentId === scanId) { decisions[hunkId] = decision; render(); }
+}
+
+function showError(err) { if ($("main").querySelector(".empty")) $("main").innerHTML = `<div class="empty">review unavailable. select a scan or reload to retry.</div>`; $("error").hidden = false; $("error").textContent = err.message || "could not load review"; }
+
+$("filters").addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  filter = b.dataset.filter;
+  for (const x of $("filters").querySelectorAll("button")) x.classList.toggle("on", x === b);
+  render();
+  $("main").scrollIntoView({ block: "start" });
+});
+
+$("main").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-act]");
+  if (!b) return;
+  const hunk = b.closest(".hunk");
+  if (!hunk) return;
+  decide(hunk.dataset.id, b.dataset.act).catch(showError);
+});
+
+$("scans").addEventListener("change", () => loadScan($("scans").value).catch(showError));
+
+(async () => {
+  const res = await fetch("/api/scans");
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "could not load scans");
+  scans = data.scans || [];
+  $("scans").innerHTML = scans.length
+    ? scans.map((s) => `<option value="${esc(s.id)}">${esc(s.id)}</option>`).join("")
+    : `<option>no scans</option>`;
+  if (data.latest) {
+    $("scans").value = data.latest;
+    await loadScan(data.latest);
+  } else {
+    $("main").innerHTML = `<div class="empty">no scans yet. run <code>__SKRUB__</code>.</div>`;
+  }
+})().catch(showError);
+</script>
+</body>
+</html>

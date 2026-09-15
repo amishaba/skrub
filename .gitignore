@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.skrub/
+.unvibe/
+dist/
+*.log
+.DS_Store

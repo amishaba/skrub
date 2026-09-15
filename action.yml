@@ -1,0 +1,19 @@
+name: skrub
+description: "Cleanup and reuse comments on PRs: dead code, near-copies, naming. Not a bug finder."
+author: amishaba
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+    - name: Install skrub
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --omit=dev
+    - name: skrub comment
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: node "$GITHUB_ACTION_PATH/bin/skrub.mjs" comment
